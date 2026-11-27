@@ -267,6 +267,33 @@ input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line
   .joyb{width:100px;height:100px}
 }
 
+/* toque de app: sem zoom no toque duplo, sem seleção de texto ao segurar */
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea,select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-size:16px!important}
+button,a,.btn,.mini,canvas{touch-action:manipulation}
+/* cabeçalho fixo no topo do celular, abaixo da barra de status */
+@media(max-width:720px){
+  #app{padding-top:0}
+  .top{position:sticky;top:0;z-index:30;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 4px;padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));background:#07080ff0;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .coach-hl{scroll-margin-top:calc(90px + env(safe-area-inset-top,0px))}
+}
+/* escolha de missão */
+.mis{display:flex;flex-direction:column;gap:10px;width:100%;text-align:left}
+.mis-sec{font:600 .68rem var(--fd);letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin:4px 2px 0}
+.mis-ch{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer;min-height:66px;font:inherit}
+.mis-ch:not(:disabled):active{transform:scale(.985)}
+.mis-ch b{display:block;font:700 1.02rem var(--fd);letter-spacing:.02em}
+.mis-ch small{display:block;color:var(--mut);font:500 .8rem var(--fb);margin-top:2px}
+.mis-n{font:700 1.5rem var(--fd);color:var(--a);text-align:center}
+.mis-st{font:700 .62rem var(--fd);letter-spacing:.1em;text-transform:uppercase;padding:5px 9px;border-radius:99px;white-space:nowrap}
+.mis-st.ok{background:#173326;color:var(--good)}.mis-st.new{background:linear-gradient(100deg,var(--a),var(--b));color:#06080f}.mis-st.lock{background:#1d2133;color:var(--mut)}
+.mis-ch.next{border-color:var(--a);box-shadow:0 0 0 1px var(--a),0 8px 24px #0006}
+.mis-ch:disabled{opacity:.5;cursor:not-allowed}
+.mis-ch.inf{background:linear-gradient(110deg,#25143d,#10223a);border-color:#7a4bd0}
+.mis-ch.inf .mis-n{color:#c27bff}
+.mis-back{width:100%;min-height:52px;margin-top:4px;font-size:.92rem}
+.mis-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:2px}
 /* abertura: vídeo MV_NEXUS + tela-título */
 .intro{position:fixed;inset:0;z-index:200;background:#04040e;color:var(--fg);overflow:hidden;transition:opacity .45s;touch-action:manipulation}
 .intro.out{opacity:0;pointer-events:none}
@@ -1575,6 +1602,8 @@ const AUD=(()=>{
   function ui(act,arg){let n=UI[act];if(act==='pick'&&!isUnlocked(arg,SAVE))n='ui_error';if(act==='labpair'){const[a2,b2]=arg.split('|');if(!isUnlocked(a2,SAVE)||!isUnlocked(b2,SAVE))n='ui_error'}if(n)play(n,{vol:.7})}
   return{load,play,vary,voice,has,music,apply,ui,setDuck,destravarVoz,vozes:()=>lerVozes(),vozAtual:()=>vozAtual(),get ok(){return ok},get cur(){return curKey}};
 })();
+addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()});
+addEventListener('dblclick',e=>{if(!e.target.closest('input,textarea'))e.preventDefault()},{passive:false});
 addEventListener('pointerdown',()=>{if(SAVE&&SAVE.sound){Snd.resume();AUD.load();AUD.destravarVoz()}},{capture:true});
 /* material do alvo define a segunda camada do impacto */
 function matOf(e){if(['sapo','vigia','gemeas','ambar','prisma'].includes(e.key)||e.type==='espectral'||(e.mini&&e.th===2))return'crystal';
@@ -2383,10 +2412,18 @@ const Arena=(()=>{
       <div class="opts">${next?`<button class="btn pri" data-act="play" data-arg="${S.ch+1}">Próximo capítulo</button>`:'<button class="btn pri" data-act="play" data-arg="endless">Modo infinito</button>'}<button class="btn" data-act="go" data-arg="lab">Laboratório de fusão</button><button class="btn" data-act="go" data-arg="map">Voltar ao mapa</button></div>`);
   }
   function showIdle(){
-    const ops=CHAPTERS.map((c,i)=>{const open=i===0||SAVE.cleared[i-1];return`<button class="btn ${open?'':'dis'}" ${open?'':'disabled'} data-act="play" data-arg="${i}">Cap. ${i+1} · ${c.name}${SAVE.cleared[i]?' (concluído)':''}</button>`}).join('');
+    const next=CHAPTERS.findIndex((c,i)=>!SAVE.cleared[i]&&(i===0||SAVE.cleared[i-1]));
+    const ops=CHAPTERS.map((c,i)=>{const open=i===0||SAVE.cleared[i-1],done=SAVE.cleared[i];
+      const st=done?'<span class="mis-st ok">Concluído</span>':open?'<span class="mis-st new">Jogar</span>':`<span class="mis-st lock">Vença o Cap. ${i}</span>`;
+      return`<button class="mis-ch ${i===next?'next':''}" ${open?'':'disabled'} data-act="play" data-arg="${i}"><span class="mis-n">${i+1}</span><span><b>${c.name}</b><small>${c.sub} · Chefe: ${BOSSES[c.boss].name}</small></span>${st}</button>`}).join('');
     const inf=SAVE.cleared[0];
     setTimeout(()=>Coach.auto('arena'),600);
-    showOv(`<span class="lab-tag">Arena de combate</span><h2>Escolha a missão</h2><div class="opts">${ops}<button class="btn" data-act="tutorial">Rever tutorial de combate</button><button class="btn" data-act="help">Como funciona a arena?</button><button class="btn" ${inf?'':'disabled'} data-act="play" data-arg="endless">Modo infinito${inf?` · recorde onda ${SAVE.endlessBest}`:' · libera no Cap. 1'}</button><button class="btn" data-act="go" data-arg="menu">Voltar ao menu</button></div>`);
+    showOv(`<span class="lab-tag">Arena de combate</span><h2>Escolha a missão</h2><div class="mis">
+      <span class="mis-sec">Campanha</span><div class="mis" id="misChs">${ops}</div>
+      <span class="mis-sec">Desafio</span>
+      <button class="mis-ch inf" ${inf?'':'disabled'} data-act="play" data-arg="endless"><span class="mis-n">∞</span><span><b>Modo infinito</b><small>${inf?`Ondas sem fim · recorde: onda ${SAVE.endlessBest||0}`:'Libera ao vencer o Capítulo 1'}</small></span>${inf?'<span class="mis-st new">Jogar</span>':'<span class="mis-st lock">Bloqueado</span>'}</button>
+      <button class="btn mis-back" data-act="go" data-arg="menu">Voltar ao menu</button>
+      <div class="mis-links"><button class="mini" data-act="tutorial">Rever tutorial</button><button class="mini" data-act="help">Como funciona a arena?</button></div></div>`);
   }
   function pause(on){
     if(!S||S.state==='lose'||S.state==='win')return;
@@ -2863,7 +2900,7 @@ const Coach=(()=>{
       {sel:'#labRes .abil',n:'Habilidades e evolução',d:()=>'A <b>habilidade I</b> já vem liberada. A <b>II</b> chega no nível 10, o <b>Supremo</b> no 20 e a <b>forma lendária</b> no 30. Cada poder tem som próprio: ao usar uma habilidade, você ouve os dois poderes da fusão.'},
       {sel:'#labRes .row .btn,#labBar .btn',n:'Confirme e descubra',d:()=>'<b>Confirmar</b> troca a fusão do herói, quantas vezes quiser. Cada fusão nova entra em <b>Descobertas</b>, e algumas são <b>lendárias</b>, com nome próprio.'}],
     arena:[
-      {sel:'#ov .opts',n:'Escolha a missão',d:()=>'Cada <b>capítulo</b> tem 6 ondas: três de inimigos, uma com <b>mini chefe</b>, mais uma de inimigos e o <b>chefe</b> no final. Os capítulos liberam em ordem: vença um para abrir o próximo.'},
+      {sel:'#misChs',n:'Escolha a missão',d:()=>'Cada <b>capítulo</b> tem 6 ondas: três de inimigos, uma com <b>mini chefe</b>, mais uma de inimigos e o <b>chefe</b> no final. Os capítulos liberam em ordem: vença um para abrir o próximo.'},
       {sel:'#ov [data-act=tutorial]',n:'Tutorial de combate',d:()=>'Ensina mover, atacar, esquivar, pular, defender e usar habilidades com um alvo de treino. Pode rever quando quiser.'},
       {sel:'#ov [data-arg=endless]',n:'Modo infinito',d:()=>'Libera depois do Capítulo 1. As ondas não acabam, a dificuldade sobe e aparece um chefe a cada 5 ondas. Seu recorde fica salvo.'},
       {sel:'#field',n:'Durante a luta',d:()=>'Barra <b>vermelha</b> é vida, <b>azul</b> é energia (gasta nas habilidades) e a <b>dourada</b> carrega o Supremo. Inimigos dão <b>XP e moedas</b>, às vezes deixam uma <b>cruz verde</b> que cura, e mini chefes e chefes deixam <b>equipamentos</b>.'},

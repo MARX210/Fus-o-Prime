@@ -88,6 +88,22 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--b);outline-offs
 .list{display:flex;flex-direction:column;gap:8px}
 .item{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
 .item>div{min-width:0}
+.it2{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;flex-wrap:nowrap}
+.it2>div:nth-child(2){display:flex;flex-direction:column;gap:3px}
+.it2 b{font-family:var(--fd);font-size:.98rem}
+.it-ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:#ffffff0a;border:1px solid var(--line);color:var(--a)}
+.it-ic svg,.tag.slot svg,.it-h svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.tag.slot svg{width:12px;height:12px;vertical-align:-2px;margin-right:4px}
+.it-h svg{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+.it-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.it2>.tag{justify-self:start;align-self:center}
+.it-k{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}
+.it-b{font-size:.85rem}
+.it-n{color:var(--a);font-size:.85rem}
+.it-act{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.it-act .mini{white-space:nowrap}
+.it-h{margin-top:6px}
+@media(max-width:420px){.it2{grid-template-columns:30px minmax(0,1fr)}.it2>.tag,.it-act{grid-column:2}.it-act{flex-direction:row}}
 /* laboratório */
 .lab{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
 .lab .prev{order:1}.lab .pick{order:2}.lab .res{order:3}
@@ -517,6 +533,7 @@ body.coach-on .screen:not([hidden]){padding-bottom:min(60vh,420px)}
     </section>
     <section class="screen" id="s-evolve" hidden></section>
     <section class="screen" id="s-inv" hidden></section>
+    <section class="screen" id="s-shop" hidden></section>
     <section class="screen" id="s-map" hidden></section>
     <section class="screen" id="s-boss" hidden></section>
     <section class="screen" id="s-disc" hidden></section>
@@ -678,8 +695,18 @@ const ITEM_BASE={
   botas:{n:['Botas de Corrida','Sapatilhas Magnéticas','Passos de Relâmpago'],b:{spd:14,en:4}}
 };
 const RARITY=['comum','raro','lendário'], RAR_MULT=[1,1.8,3];
-function makeItem(rar){
-  const slots=Object.keys(ITEM_BASE), slot=slots[Math.floor(Math.random()*3)], B=ITEM_BASE[slot];
+const SLOT_INFO={
+  amuleto:{n:'Amuleto',pl:'Amuletos',ic:'<svg viewBox="0 0 24 24"><path d="M8 3c0 4 1.5 6 4 6s4-2 4-6"/><path d="M12 9l5 6-5 6-5-6z"/></svg>'},
+  armadura:{n:'Armadura',pl:'Armaduras',ic:'<svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6z"/></svg>'},
+  botas:{n:'Botas',pl:'Botas',ic:'<svg viewBox="0 0 24 24"><path d="M7 3h5v9l7 3v5H5V15c1-1 2-3 2-5z"/><path d="M5 17h14"/></svg>'}
+};
+const SELL=[25,80,300];
+// lendários são únicos: um por tipo de item
+const hasLeg=slot=>SAVE.inv.some(i=>i.rar===2&&i.slot===slot);
+function makeItem(rar,want){
+  const slots=Object.keys(ITEM_BASE);let slot=want||slots[Math.floor(Math.random()*3)];
+  if(rar===2&&hasLeg(slot)){const free=want?[]:slots.filter(k=>!hasLeg(k));if(free.length)slot=free[Math.floor(Math.random()*free.length)];else rar=1}
+  const B=ITEM_BASE[slot];
   const b={};for(const k in B.b)b[k]=Math.round(B.b[k]*RAR_MULT[rar]);
   return{id:'i'+Date.now().toString(36)+Math.floor(Math.random()*999),slot,rar,n:B.n[rar],b};
 }
@@ -764,9 +791,13 @@ const defSave=()=>({v:1,created:false,name:'Herói',body:'agil',level:1,xp:0,pts
   claimed:{},ach:{},tutDone:false,stats:{kills:0,boss:0,dash:0,pguard:0,combo:0,fus:0,spec:0,jump:0,waves:0,sup:0},sound:true});
 function loadSave(){
   try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const o=JSON.parse(raw),d=defSave();
-    return Object.assign(d,o,{attr:Object.assign(d.attr,o.attr),up:Object.assign(d.up,o.up),stats:Object.assign(d.stats,o.stats),eq:Object.assign(d.eq,o.eq)});}}catch(e){}
+    return fixLeg(Object.assign(d,o,{attr:Object.assign(d.attr,o.attr),up:Object.assign(d.up,o.up),stats:Object.assign(d.stats,o.stats),eq:Object.assign(d.eq,o.eq)}));}}catch(e){}
   return defSave();
 }
+function fixLeg(sv){const keep={};let extra=0;
+  for(const it of sv.inv)if(it.rar===2&&(sv.eq[it.slot]===it.id))keep[it.slot]=it.id;
+  sv.inv=sv.inv.filter(it=>{if(it.rar!==2)return true;if(!keep[it.slot]){keep[it.slot]=it.id;return true}if(keep[it.slot]===it.id)return true;extra++;return false});
+  if(extra){sv.coins+=extra*SELL[2];sv.legFix=extra}return sv}
 let saveTimer=0;
 function persist(now){
   const go=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}};
@@ -2524,8 +2555,9 @@ const Arena=(()=>{
 'use strict';
 /* ===== MÓDULO INTERFACE: telas, laboratório de fusão, inventário, mapa, roteamento ===== */
 SAVE=loadSave();
+if(SAVE.legFix){const n=SAVE.legFix;delete SAVE.legFix;persist(true);setTimeout(()=>toast(`Lendários repetidos foram trocados por ${n*SELL[2]} moedas`),1500)}
 const DEV=/[?&]dev\b/.test(location.search);
-const TABS=[['menu','Início'],['create','Criação'],['lab','Laboratório'],['arena','Arena'],['evolve','Evolução'],['inv','Inventário'],['map','Mapa'],['boss','Chefes'],['disc','Descobertas'],['arch','Arquitetura']];
+const TABS=[['menu','Início'],['create','Criação'],['lab','Laboratório'],['arena','Arena'],['evolve','Evolução'],['inv','Inventário'],['shop','Loja'],['map','Mapa'],['boss','Chefes'],['disc','Descobertas'],['arch','Arquitetura']];
 let cur='menu',lab={core:SAVE.core,ess:SAVE.ess,slot:'core'},resetArm=0;
 const fusionNow=()=>makeFusion(SAVE.core,SAVE.ess);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -2558,7 +2590,7 @@ function show(tab){
   TABS.forEach(([k])=>{$('#s-'+k).hidden=k!==tab;$('#t-'+k).setAttribute('aria-selected',k===tab)});
   $$('#more [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
   $('#moreBtn').setAttribute('aria-selected',!PRI.includes(tab));
-  ({menu:rMenu,create:rCreate,lab:rLab,evolve:rEvolve,inv:rInv,map:rMap,boss:rBoss,disc:rDisc,arch:rArch,arena:()=>{}})[tab]();
+  ({menu:rMenu,create:rCreate,lab:rLab,evolve:rEvolve,inv:rInv,shop:rShop,map:rMap,boss:rBoss,disc:rDisc,arch:rArch,arena:()=>{}})[tab]();
   if(tab==='arena')Arena.enter();
   updWallet();window.scrollTo({top:0});
   try{history.replaceState(null,'','#'+tab)}catch(e){}
@@ -2694,19 +2726,47 @@ function rEvolve(){
 }
 
 /* ---------- Inventário ---------- */
+const rarTag=r=>`<span class="tag ${r===2?'warn':r===1?'acc':''}">${RARITY[r]}</span>`;
+const bonusTxt=b=>Object.entries(b).map(([k,v])=>`+${v} ${BONUS_NAMES[k]}`).join(' · ');
+const slotTag=k=>`<span class="tag slot">${SLOT_INFO[k].ic}${SLOT_INFO[k].n}</span>`;
 function rInv(){
-  const slots=[['amuleto','Amuleto'],['armadura','Armadura'],['botas','Botas']];
-  const itemHtml=it=>{const on=SAVE.eq[it.slot]===it.id;return`<div class="item"><div><b style="font-family:var(--fd)">${it.n}</b> <span class="tag ${it.rar===2?'warn':it.rar===1?'acc':''}">${RARITY[it.rar]}</span><br><span class="mut">${Object.entries(it.b).map(([k,v])=>`+${v} ${BONUS_NAMES[k]}`).join(' · ')}</span></div><button class="btn sm" data-act="equip" data-arg="${it.id}">${on?'Remover':'Equipar'}</button></div>`};
-  $('#s-inv').innerHTML=`<div><span class="lab-tag">Inventário</span><h2>Equipamentos e melhorias</h2></div>
+  const slots=Object.keys(SLOT_INFO);
+  const equipped=slots.map(k=>{const it=SAVE.inv.find(i=>i.id===SAVE.eq[k]);
+    return`<div class="item it2"><div class="it-ic">${SLOT_INFO[k].ic}</div><div><span class="mut it-k">${SLOT_INFO[k].n}</span><b>${it?it.n:'Vazio'}</b>${it?`<span class="mut it-b">${bonusTxt(it.b)}</span>`:''}</div>${it?rarTag(it.rar):''}</div>`}).join('');
+  const groups=slots.map(k=>{
+    const stacks={};for(const it of SAVE.inv)if(it.slot===k)(stacks[it.rar]=stacks[it.rar]||[]).push(it);
+    const rows=[2,1,0].filter(r=>stacks[r]).map(r=>{const L=stacks[r],it=L[0],on=L.some(x=>SAVE.eq[k]===x.id),spare=L.find(x=>SAVE.eq[k]!==x.id);
+      return`<div class="item it2"><div class="it-ic">${SLOT_INFO[k].ic}</div><div><b>${it.n}${L.length>1?` <span class="it-n">×${L.length}</span>`:''}</b><span class="it-tags">${slotTag(k)}${rarTag(r)}</span><span class="mut it-b">${bonusTxt(it.b)}</span></div>
+        <div class="it-act"><button class="btn sm ${on?'':'pri'}" data-act="equip" data-arg="${on?SAVE.eq[k]:it.id}">${on?'Remover':'Equipar'}</button>${spare?`<button class="mini" data-act="sell" data-arg="${spare.id}">Vender +${SELL[r]}</button>`:''}</div></div>`}).join('');
+    return rows?`<span class="lab-tag it-h">${SLOT_INFO[k].ic}${SLOT_INFO[k].pl}</span>${rows}`:''}).join('');
+  $('#s-inv').innerHTML=`<div><span class="lab-tag">Inventário</span><h2>Equipamentos</h2></div>
   <div class="grid2">
-    <div class="panel list"><span class="lab-tag">Equipado</span>${slots.map(([k,n])=>{const it=SAVE.inv.find(i=>i.id===SAVE.eq[k]);return`<div class="item"><div><span class="mut">${n}</span><br><b style="font-family:var(--fd)">${it?it.n:'Vazio'}</b></div>${it?`<span class="tag ${it.rar===2?'warn':it.rar===1?'acc':''}">${RARITY[it.rar]}</span>`:''}</div>`}).join('')}
-      <span class="lab-tag" style="margin-top:8px">Mochila (${SAVE.inv.length})</span>
-      ${SAVE.inv.length?SAVE.inv.slice().reverse().map(itemHtml).join(''):'<p class="mut">Mini chefes e chefes deixam equipamentos. Eles dão atributos reais.</p>'}</div>
-    <div class="panel list"><span class="lab-tag">Melhorias (moedas)</span>
+    <div class="panel list"><span class="lab-tag">Equipado</span>${equipped}
+      <p class="mut" style="font-size:.85rem">Quer mais itens? Compre na <button class="mini" data-act="go" data-arg="shop">Loja</button></p></div>
+    <div class="panel list"><span class="lab-tag">Mochila (${SAVE.inv.length})</span>
+      ${SAVE.inv.length?groups:'<p class="mut">Mini chefes e chefes deixam equipamentos. Eles dão atributos reais.</p>'}
+      <p class="mut" style="font-size:.8rem">Itens iguais ficam empilhados. Lendários são únicos: só existe um de cada tipo.</p></div>
+  </div>`;
+}
+const SHOP_ITEM=[150,500];const CHEST=8,FORGE=40;
+function rShop(){
+  const slots=Object.keys(SLOT_INFO);
+  $('#s-shop').innerHTML=`<div><span class="lab-tag">Loja</span><h2>Equipamentos, melhorias e skins</h2></div>
+  <div class="grid2">
+    <div class="panel list" id="shopEq"><span class="lab-tag">Equipamentos (moedas)</span>
+      ${slots.map(k=>[0,1].map(r=>{const B=ITEM_BASE[k],b={};for(const q in B.b)b[q]=Math.round(B.b[q]*RAR_MULT[r]);const c=SHOP_ITEM[r];
+        return`<div class="item it2"><div class="it-ic">${SLOT_INFO[k].ic}</div><div><b>${B.n[r]}</b><span class="it-tags">${slotTag(k)}${rarTag(r)}</span><span class="mut it-b">${bonusTxt(b)}</span></div><div class="it-act"><button class="btn sm" data-act="shopbuy" data-arg="${k}:${r}" ${SAVE.coins<c?'disabled':''}>${c} moedas</button></div></div>`}).join('')).join('')}
+    </div>
+    <div class="panel list" id="shopSp"><span class="lab-tag">Especiais (cristais)</span>
+      <div class="item it2"><div class="it-ic"><svg viewBox="0 0 24 24"><path d="M3 9h18v11H3z"/><path d="M3 9l3-5h12l3 5M12 9v11"/></svg></div><div><b>Baú misterioso</b><span class="mut it-b">Um equipamento aleatório: 60% comum, 32% raro e 8% de chance de lendário.</span></div><div class="it-act"><button class="btn sm" data-act="chest" ${SAVE.cry<CHEST?'disabled':''}>${CHEST} cristais</button></div></div>
+      ${slots.map(k=>{const own=hasLeg(k),B=ITEM_BASE[k],b={};for(const q in B.b)b[q]=Math.round(B.b[q]*RAR_MULT[2]);
+        return`<div class="item it2"><div class="it-ic">${SLOT_INFO[k].ic}</div><div><b>Forja: ${B.n[2]}</b><span class="it-tags">${slotTag(k)}${rarTag(2)}</span><span class="mut it-b">${bonusTxt(b)}</span></div><div class="it-act"><button class="btn sm" data-act="forge" data-arg="${k}" ${own||SAVE.cry<FORGE?'disabled':''}>${own?'Você já tem':FORGE+' cristais'}</button></div></div>`}).join('')}
+      <span class="lab-tag" style="margin-top:8px">Melhorias permanentes (moedas)</span>
       ${UPGRADES.map(u=>{const lv=SAVE.up[u.id],cost=u.base*(lv+1),max=lv>=u.max;return`<div class="item"><div><b style="font-family:var(--fd)">${u.n}</b> <span class="tag">${lv}/${u.max}</span><br><span class="mut">${u.d}</span></div><button class="btn sm" data-act="buyup" data-arg="${u.id}" ${max||SAVE.coins<cost?'disabled':''}>${max?'Máximo':cost+' moedas'}</button></div>`}).join('')}
       <span class="lab-tag" style="margin-top:8px">Skins e efeitos (cristais, só visual)</span>
       ${SKINS.map(s=>{const own=SAVE.skins.includes(s.id),use=SAVE.skin===s.id;return`<div class="item"><div><b style="font-family:var(--fd)">${s.n}</b><br><span class="mut">${s.glow?'Aura colorida':'Aura da fusão'}</span></div>${own?`<button class="btn sm" data-act="skin" data-arg="${s.id}" ${use?'disabled':''}>${use?'Em uso':'Usar'}</button>`:`<button class="btn sm" data-act="buyskin" data-arg="${s.id}" ${SAVE.cry<s.cost?'disabled':''}>${s.cost} cristais</button>`}</div>`}).join('')}
-    </div></div>`;
+    </div>
+  </div>`;
 }
 
 /* ---------- Mapa e missões ---------- */
@@ -2831,9 +2891,13 @@ document.addEventListener('click',e=>{
     case 'setlvl':{const l=+arg;SAVE.level=l;SAVE.xp=0;SAVE.pts=3*(l-1);SAVE.attr={vig:0,for:0,def:0,agi:0,ene:0};
       ACHIEVEMENTS.forEach(a=>{if(!SAVE.ach[a.id]&&a.t(SAVE)){SAVE.ach[a.id]=1;SAVE.cry+=a.cry}});persist(true);rEvolve();updWallet();toast('Nível '+l+' definido (modo teste)');break}
     case 'equip':{const it=SAVE.inv.find(i=>i.id===arg);if(it){SAVE.eq[it.slot]=SAVE.eq[it.slot]===it.id?null:it.id;persist();rInv()}break}
-    case 'buyup':{const u=UPGRADES.find(x=>x.id===arg),cost=u.base*(SAVE.up[arg]+1);if(SAVE.coins>=cost&&SAVE.up[arg]<u.max){SAVE.coins-=cost;SAVE.up[arg]++;persist();rInv();updWallet()}break}
-    case 'buyskin':{const s=SKINS.find(x=>x.id===arg);if(SAVE.cry>=s.cost){SAVE.cry-=s.cost;SAVE.skins.push(arg);SAVE.skin=arg;persist();rInv();updWallet()}break}
-    case 'skin':SAVE.skin=arg;persist();rInv();break;
+    case 'buyup':{const u=UPGRADES.find(x=>x.id===arg),cost=u.base*(SAVE.up[arg]+1);if(SAVE.coins>=cost&&SAVE.up[arg]<u.max){SAVE.coins-=cost;SAVE.up[arg]++;persist();rShop();updWallet()}break}
+    case 'sell':{const it=SAVE.inv.find(i=>i.id===arg);if(it&&SAVE.eq[it.slot]!==it.id){SAVE.inv=SAVE.inv.filter(i=>i!==it);SAVE.coins+=SELL[it.rar];persist();rInv();updWallet();toast(`${it.n} vendido: +${SELL[it.rar]} moedas`)}break}
+    case 'shopbuy':{const[k,r]=arg.split(':'),c=SHOP_ITEM[+r];if(SAVE.coins>=c){SAVE.coins-=c;const it=makeItem(+r,k);SAVE.inv.push(it);persist();rShop();updWallet();toast(`${it.n} foi para a mochila`)}break}
+    case 'chest':{if(SAVE.cry>=CHEST){SAVE.cry-=CHEST;const x=Math.random(),it=makeItem(x<.08?2:x<.4?1:0);SAVE.inv.push(it);persist();rShop();updWallet();toast(`Baú: ${it.n} (${RARITY[it.rar]})`)}break}
+    case 'forge':{if(SAVE.cry>=FORGE&&!hasLeg(arg)){SAVE.cry-=FORGE;const it=makeItem(2,arg);SAVE.inv.push(it);persist();rShop();updWallet();toast(`${it.n} forjado!`)}break}
+    case 'buyskin':{const s=SKINS.find(x=>x.id===arg);if(SAVE.cry>=s.cost){SAVE.cry-=s.cost;SAVE.skins.push(arg);SAVE.skin=arg;persist();rShop();updWallet()}break}
+    case 'skin':SAVE.skin=arg;persist();rShop();break;
     case 'claim':{const m=MISSIONS.find(x=>x.id===arg);if(m&&m.get(SAVE)>=m.goal&&!SAVE.claimed[arg]){SAVE.claimed[arg]=1;SAVE.coins+=m.r.coins||0;SAVE.cry+=m.r.cry||0;persist();rMap();updWallet()}break}
     case 'reset':if(resetArm>Date.now()){try{localStorage.removeItem(SAVE_KEY)}catch(e){}SAVE=defSave();lab={core:SAVE.core,ess:SAVE.ess,slot:'core'};resetArm=0;setTheme(fusionNow());persist(true);rMenu();updWallet();toast('Progresso apagado')}else{resetArm=Date.now()+4000;rMenu();setTimeout(()=>{if(cur==='menu')rMenu()},4100)}break;
   }
@@ -2958,8 +3022,10 @@ const Coach=(()=>{
       {sel:'#s-evolve [data-act=setlvl]',dev:1,n:'Modo teste',d:()=>'Só para testar o protótipo: pula direto para um nível e mostra habilidades avançadas sem precisar jogar tudo.'}],
     inv:[
       {sel:'#s-inv .grid2 > .panel:first-child',n:'Equipamentos',d:()=>'Você tem 3 espaços: <b>amuleto, armadura e botas</b>. Mini chefes e chefes deixam um item ao serem derrotados. Itens <b>raros</b> e <b>lendários</b> dão mais atributos. Toque em <b>Equipar</b> para usar.'},
-      {sel:'#s-inv .grid2 > .panel:nth-child(2)',n:'Melhorias',d:()=>'Gaste <b>moedas</b> em melhorias permanentes: mais dano, recarga mais rápida das habilidades e recuperação de vida. O preço sobe a cada nível da melhoria.'},
-      {sel:'#s-inv [data-act=skin],#s-inv [data-act=buyskin]',n:'Skins',d:()=>'Compradas com <b>cristais</b>, mudam a cor da aura do herói. São só visuais, não dão vantagem.'}],
+      {sel:'#s-inv .grid2 > .panel:nth-child(2)',n:'Mochila',d:()=>'Os itens ficam separados por tipo. Iguais aparecem empilhados (×2, ×3). Venda os que sobram por <b>moedas</b>. Lendários são únicos: só existe um de cada tipo.'}],
+    shop:[
+      {sel:'#shopEq',n:'Equipamentos',d:()=>'Compre itens <b>comuns</b> e <b>raros</b> com moedas, escolhendo o tipo: amuleto, armadura ou botas.'},
+      {sel:'#shopSp',n:'Especiais',d:()=>'Com <b>cristais</b>: o baú misterioso pode trazer um lendário, e a forja garante o lendário do tipo que faltar. Aqui também ficam as melhorias permanentes e as skins.'}],
     map:[
       {sel:'#s-map .grid3',n:'Capítulos',d:()=>'A história contra o <b>Consórcio Sol Negro</b> em 3 regiões. Cada capítulo mostra o mini chefe, o chefe e a recompensa.'},
       {sel:'#s-map .chapter',n:'Recompensas',d:()=>'Na <b>primeira vitória</b> de cada capítulo você ganha XP, moedas, cristais e um <b>poder novo</b> para o Laboratório: Metal, Espírito e Fenda Dimensional. O próximo capítulo também é liberado.'},
@@ -2981,7 +3047,7 @@ const Coach=(()=>{
   function hl(scroll){$$('.coach-hl').forEach(x=>x.classList.remove('coach-hl'));if(!on)return;const t=target();el.classList.remove('up');if(t){t.classList.add('coach-hl');const fixo=getComputedStyle(t).position==='fixed'||t.closest('.tabs,.top');
       if(scroll){if(t.closest('.top')||(t.closest('.tabs')&&!mob()))scrollTo({top:0,behavior:'auto'});else if(!fixo)t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'})}
       const place=()=>{if(!t.classList.contains('coach-hl'))return;el.classList.remove('up');const r=t.getBoundingClientRect(),c=el.getBoundingClientRect();if(r.top>c.top-40&&r.top<c.bottom)el.classList.add('up')};place();setTimeout(place,500)}}
-  const nomes={menu:'Início',create:'Criação',lab:'Laboratório',arena:'Arena',evolve:'Evolução',inv:'Inventário',map:'Mapa',boss:'Chefes',disc:'Descobertas',arch:'Arquitetura'};
+  const nomes={menu:'Início',create:'Criação',lab:'Laboratório',arena:'Arena',evolve:'Evolução',inv:'Inventário',shop:'Loja',map:'Mapa',boss:'Chefes',disc:'Descobertas',arch:'Arquitetura'};
   function render(scroll=true){const L=steps(),st=L[i],last=i===L.length-1;
     el.innerHTML=`<div class="dots">${L.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>
       <span class="lab-tag">Guia · ${nomes[tab]} · ${i+1} de ${L.length}</span><h3 id="coachT">${st.n}</h3><p>${st.d()}</p>

@@ -1690,6 +1690,9 @@ const Arena=(()=>{
     AUD.music(mode==='endless'?'endless':'c'+(ch+1));
     S.banner=mode==='endless'?'MODO INFINITO':`CAPÍTULO ${ch+1}  ·  ${CHAPTERS[ch].name.toUpperCase()}`;S.bannerT=2.2;
   }
+  /* Modo infinito: os 3 primeiros mapas seguem a ordem dos capítulos; depois cada bloco de 5 ondas sorteia o mapa (sem repetir o anterior) */
+  function endTh(wi=S.wi){const b=Math.floor(wi/5);if(b<3)return b;S.thSeq=S.thSeq||[0,1,2];
+    for(let k=S.thSeq.length;k<=b;k++){const prev=S.thSeq[k-1];let n;do{n=Math.floor(Math.random()*3)}while(n===prev);S.thSeq[k]=n}return S.thSeq[b]}
   function setScale(){
     if(S.mode==='endless'){const n=S.wi;S.hpS=4.2*Math.pow(1.05,n);S.dmgS=5.6*Math.pow(1.045,n)}
     else{S.hpS=[1,2.1,3.3][S.ch]+.07*S.wi;S.dmgS=[1.9,3.4,5][S.ch]*(1+.04*S.wi)}
@@ -1698,7 +1701,7 @@ const Arena=(()=>{
     if(S.mode!=='endless')return CHAPTERS[S.ch].waves[S.wi];
     const n=S.wi+1;if(n%5===0)return{boss:1,rast:2+(n/5|0)};
     if(n%5===3)return{mini:1,sent:2,pulsar:2};
-    const pool=['rast','sent','pulsar','espec'],ex=[['brasa','carvo','estand'],['pinca','sapo','leque'],['vigia','gemeas','ambar']][Math.floor(S.wi/5)%3],d={};const cnt=4+Math.floor(n*.7);
+    const pool=['rast','sent','pulsar','espec'],ex=[['brasa','carvo','estand'],['pinca','sapo','leque'],['vigia','gemeas','ambar']][endTh()],d={};const cnt=4+Math.floor(n*.7);
     for(let i=0;i<cnt;i++){const k=Math.random()<.4?ex[Math.floor(Math.random()*2)]:pool[Math.floor(Math.random()*Math.min(4,1+Math.ceil(n/2)))];d[k]=(d[k]||0)+1}if(n%5===4)d[ex[2]]=1;return d;
   }
   function startWave(){
@@ -1709,19 +1712,19 @@ const Arena=(()=>{
     S.state='wave';S.spT=0;if(S.wi===0)AUD.voice(S.mode==='endless'?'v_survival':'v_fight',0,S.mode==='endless'?'':`Capítulo ${S.ch+1}, ${CHAPTERS[S.ch].name}`);
     if(S.mode!=='endless'&&waveDef().boss)AUD.music('b'+(S.ch+1));
     const isBoss=S.queue.includes('boss');
-    S.banner=isBoss?'CHEFE':`ONDA ${S.wi+1}`;S.bannerT=1.6;
+    S.banner=isBoss?'CHEFE':(S.mode==='endless'&&S.wi%5===0&&S.wi>0?`ONDA ${S.wi+1}  ·  ${CHAPTERS[endTh()].name.toUpperCase()}`:`ONDA ${S.wi+1}`);S.bannerT=S.mode==='endless'&&S.wi%5===0&&S.wi>0?2.2:1.6;
     if(isBoss)Snd.play('boss');
   }
-  function bossKey(){return S.mode==='endless'?['ferrugem','veu','prisma'][(Math.floor((S.wi+1)/5)-1)%3]:CHAPTERS[S.ch].boss}
+  function bossKey(){return S.mode==='endless'?['ferrugem','veu','prisma'][endTh()]:CHAPTERS[S.ch].boss}
   function spawn(kind){
     let x,y,tries=0;do{const side=Math.floor(Math.random()*4);
       x=side<2?rnd(M+20,W-M-20):(side===2?M+10:W-M-10);y=side<2?(side===0?M+40:H-M-10):rnd(M+50,H-M-20);tries++}while(dst({x,y},S.p)<150&&tries<8);
     if(kind==='boss'){const key=bossKey(),B=BOSSES[key];
       const e={key,th:['ferrugem','veu','prisma'].indexOf(key),boss:true,name:B.name,type:B.type,col:B.col,col2:B.col2,x:W/2,y:M+125,r:B.r,spd:B.spd,dmg:B.contact,phase:0,ai:'boss',B,xp:300,coin:60,cry:B.hp>1600?4:3};
       e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);return}
-    if(kind==='mini'){const m=MINIS[S.mode==='endless'?S.wi%3:S.ch];
-      const e={key:'mini',mini:true,th:S.mode==='endless'?S.wi%3:S.ch,name:m.n,type:m.type,col:m.col,x,y,r:26,spd:62,dmg:20,ai:'brute',xp:140,coin:30,cry:2};e.maxHp=e.hp=520*S.hpS;S.en.push(initE(e));return}
-    const d=ENEMIES[kind],th=S.mode==='endless'?Math.floor(S.wi/5)%3:S.ch;const e={key:kind,th,name:(SKIN_NAMES[th]||{})[kind]||d.n,type:d.type,col:d.col,x,y,r:d.r,spd:d.spd,dmg:d.dmg,ai:d.ai,xp:d.xp,coin:d.coin};
+    if(kind==='mini'){const m=MINIS[S.mode==='endless'?endTh():S.ch];
+      const e={key:'mini',mini:true,th:S.mode==='endless'?endTh():S.ch,name:m.n,type:m.type,col:m.col,x,y,r:26,spd:62,dmg:20,ai:'brute',xp:140,coin:30,cry:2};e.maxHp=e.hp=520*S.hpS;S.en.push(initE(e));return}
+    const d=ENEMIES[kind],th=S.mode==='endless'?endTh():S.ch;const e={key:kind,th,name:(SKIN_NAMES[th]||{})[kind]||d.n,type:d.type,col:d.col,x,y,r:d.r,spd:d.spd,dmg:d.dmg,ai:d.ai,xp:d.xp,coin:d.coin};
     e.maxHp=e.hp=d.hp*S.hpS;S.en.push(initE(e));xInit(e);parts.burst(x,y,d.col,8,90,3,.4);
   }
   function initE(e){Object.assign(e,{vx:0,vy:0,kx:0,ky:0,hitT:0,stunT:0,slowT:0,burnT:0,burnDps:0,fearT:0,armorT:0,fade:0,seed:Math.random()*10,cdA:rnd(.8,2),hitCd:0,st:'move',stT:0,look:0,arm:0,tele:0,cyc:0,act:0,dead:false});return e}
@@ -2277,9 +2280,9 @@ const Arena=(()=>{
   /* ---------- desenho ---------- */
   function draw(){
     const t=performance.now()/1000;const c=ctx;
-    const ch=S?(S.mode==='endless'?['#0d1020','#1a1530']:CHAPTERS[S.ch].bg):['#0d1020','#171c30'];
+    const ch=S?(S.mode==='endless'?CHAPTERS[endTh()].bg:CHAPTERS[S.ch].bg):['#0d1020','#171c30'];
     const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,ch[0]);g.addColorStop(1,ch[1]);c.fillStyle=g;c.fillRect(0,0,W,H);
-    const bi=S&&S.mode!=='endless'?ARENA_BG[S.ch]:(S?ARENA_BG[Math.floor(S.wi/5)%3]:null);
+    const bi=S&&S.mode!=='endless'?ARENA_BG[S.ch]:(S?ARENA_BG[endTh()]:null);
     if(bi&&bi.complete&&bi.naturalWidth){const k=Math.max(W/bi.naturalWidth,H/bi.naturalHeight),dw=bi.naturalWidth*k,dh=bi.naturalHeight*k;c.drawImage(bi,(W-dw)/2,(H-dh)/2,dw,dh);c.fillStyle='rgba(6,8,16,.38)';c.fillRect(0,0,W,H)}
     c.strokeStyle='#ffffff08';c.lineWidth=1;for(let x=M;x<W;x+=48){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke()}for(let y=M;y<H;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}
     c.strokeStyle='#ffffff22';c.lineWidth=2;rr(c,M/2,M/2+4,W-M,H-M-4,10);c.stroke();
@@ -2474,7 +2477,7 @@ const Arena=(()=>{
     quit(){AUD.music('title');AUD.setDuck(false);stopDrones();tutRestore();S=null;hideOv();hud.hBoss.hidden=true;showIdle()},
     retry(){if(S)this.start(S.mode==='endless'?'endless':S.ch)},
     get S(){return S},get F(){return F},get ST(){return ST},
-    _test:{SFX,perfectDodge,update,hitEnemy,spawn,cast,keys,trig,held,kill,ATK},_dims:()=>({W,H})
+    _test:{endTh,SFX,perfectDodge,update,hitEnemy,spawn,cast,keys,trig,held,kill,ATK},_dims:()=>({W,H})
   };
 })();
 'use strict';

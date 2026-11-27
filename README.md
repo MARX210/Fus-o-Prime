@@ -51,6 +51,8 @@ Depois abra `http://localhost:8000` no navegador.
 3. Cada envio para a branch `main` publica o jogo automaticamente pelo workflow `.github/workflows/pages.yml`.
 4. O endereço fica no formato `https://marx210.github.io/Fus-o-Prime/`.
 
+O jogo já está no ar na Vercel em **https://fusao-prime.vercel.app**. Cada envio para a `main` atualiza o site.
+
 ### Vercel
 Importe o repositório em vercel.com como projeto estático, sem comando de build e com a pasta raiz como saída. O `vercel.json` já define cache para os sons e ícones.
 

@@ -342,6 +342,14 @@ button,a,.btn,.mini,canvas{touch-action:manipulation}
 .intro{position:fixed;inset:0;z-index:200;background:#04040e;color:var(--fg);overflow:hidden;transition:opacity .45s;touch-action:manipulation}
 .intro.out{opacity:0;pointer-events:none}
 body.intro-on{overflow:hidden}
+.mis-diff{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 4px}
+.mis-diff button{font:700 .74rem var(--fd);letter-spacing:.08em;text-transform:uppercase;padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);cursor:pointer}
+.mis-diff button.on{color:#fff;border-color:currentColor;box-shadow:0 0 0 1px currentColor inset}
+.mis-diff button.on.d0{color:#5fe3a1}.mis-diff button.on.d1{color:#7fb8ff}.mis-diff button.on.d2{color:#ff9a4a}.mis-diff button.on.d3{color:#ff4fa0}
+.mis-dtx{margin:0 0 6px;font-size:.8rem;color:var(--mut)}
+.mis-stars{display:flex;gap:3px;margin-top:3px;font-style:normal}
+.mis-stars i{font-style:normal;font-size:.78rem;color:#ffffff22}
+.mis-stars i.on:nth-child(1){color:#5fe3a1}.mis-stars i.on:nth-child(2){color:#7fb8ff}.mis-stars i.on:nth-child(3){color:#ff9a4a}.mis-stars i.on:nth-child(4){color:#ff4fa0}
 .cine{position:absolute;inset:0;z-index:8;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cine-bar{position:absolute;left:0;right:0;height:0;background:#000;transition:height .45s ease}
 .cine-bar.t{top:0}.cine-bar.b{bottom:0}
@@ -641,13 +649,13 @@ const POWERS=[
  {id:'telecinese',k:1.03,n:'Telecinese',cat:'mental',c:'#c27bff',c2:'#f0d4ff',title:'Oráculo',of:'da Psique',st:[8,10,8,10,14],pat:'single',mod:'pull',sp:'orbit',fx:'orbit',shot:'orb',tag:'mind',unlock:{lvl:6},desc:'Manipula inimigos e projéteis à distância.'},
  {id:'ilusao',n:'Ilusão',cat:'mental',c:'#ff7ad9',c2:'#7a5cff',title:'Ilusionista',of:'do Espelho',st:[8,8,9,12,13],pat:'spread',mod:'fear',sp:'nova',fx:'spark',shot:'star',tag:'mind',unlock:{lvl:9},desc:'Confunde e espalha pânico.'},
  {id:'energia',k:0.92,n:'Energia Cósmica',cat:'cosmico',c:'#7a6cff',c2:'#ffd36a',title:'Astro',of:'do Éter',st:[9,11,8,9,13],pat:'lob',mod:'explode',sp:'barrage',fx:'spark',shot:'star',tag:'cosmic',unlock:null,desc:'Poder bruto de estrelas em explosões.'},
- {id:'gravidade',n:'Gravidade',cat:'cosmico',c:'#4a3cff',c2:'#00e0ff',title:'Âncora',of:'do Peso',st:[13,10,12,5,10],pat:'lob',mod:'pull',sp:'zone',fx:'orbit',shot:'orb',tag:'cosmic',unlock:{lvl:15},desc:'Dobra o espaço e agrupa inimigos.'},
- {id:'metal',k:.93,n:'Metal',cat:'tecnologico',c:'#b6c0d2',c2:'#f0f4fb',title:'Forjador',of:'do Aço',st:[11,11,14,7,7],pat:'slash',mod:'armor',sp:'dash',fx:'spark',shot:'shard',tag:'tech',unlock:{lvl:7,boss:1},desc:'Armadura pesada que fratura defesas.'},
- {id:'nano',k:1.05,n:'Nanotecnologia',cat:'tecnologico',c:'#3dffb0',c2:'#0b9f72',title:'Arquiteto',of:'dos Nanos',st:[10,10,10,10,10],pat:'burst',mod:'slow',sp:'orbit',fx:'pixel',shot:'pixel',tag:'tech',unlock:{lvl:17},desc:'Enxames que se reconfiguram em combate.'},
- {id:'teleporte',k:1.05,n:'Teletransporte',cat:'dimensional',c:'#00d9ff',c2:'#a06bff',title:'Viajante',of:'do Portal',st:[9,9,8,12,12],pat:'single',mod:'pierce',sp:'dash',fx:'swirl',shot:'streak',tag:'dim',unlock:{lvl:13},desc:'Salta pelo espaço e atinge de surpresa.'},
- {id:'fenda',k:1.05,n:'Fenda Dimensional',cat:'dimensional',c:'#ff2e88',c2:'#6a1f9a',title:'Rasgador',of:'da Fenda',st:[10,11,9,9,11],pat:'lob',mod:'pull',sp:'beam',fx:'swirl',shot:'crescent',tag:'dim',unlock:{lvl:20,boss:3},desc:'Abre rasgos no espaço para engolir inimigos.'},
+ {id:'gravidade',n:'Gravidade',cat:'cosmico',c:'#4a3cff',c2:'#00e0ff',title:'Âncora',of:'do Peso',st:[13,10,12,5,10],pat:'lob',mod:'pull',sp:'zone',fx:'orbit',shot:'orb',tag:'cosmic',unlock:{diff:[1,2]},desc:'Dobra o espaço e agrupa inimigos.'},
+ {id:'metal',k:.93,n:'Metal',cat:'tecnologico',c:'#b6c0d2',c2:'#f0f4fb',title:'Forjador',of:'do Aço',st:[11,11,14,7,7],pat:'slash',mod:'armor',sp:'dash',fx:'spark',shot:'shard',tag:'tech',unlock:{boss:1},desc:'Armadura pesada que fratura defesas.'},
+ {id:'nano',k:1.05,n:'Nanotecnologia',cat:'tecnologico',c:'#3dffb0',c2:'#0b9f72',title:'Arquiteto',of:'dos Nanos',st:[10,10,10,10,10],pat:'burst',mod:'slow',sp:'orbit',fx:'pixel',shot:'pixel',tag:'tech',unlock:{diff:[2,2]},desc:'Enxames que se reconfiguram em combate.'},
+ {id:'teleporte',k:1.05,n:'Teletransporte',cat:'dimensional',c:'#00d9ff',c2:'#a06bff',title:'Viajante',of:'do Portal',st:[9,9,8,12,12],pat:'single',mod:'pierce',sp:'dash',fx:'swirl',shot:'streak',tag:'dim',unlock:{diff:[0,2]},desc:'Salta pelo espaço e atinge de surpresa.'},
+ {id:'fenda',k:1.05,n:'Fenda Dimensional',cat:'dimensional',c:'#ff2e88',c2:'#6a1f9a',title:'Rasgador',of:'da Fenda',st:[10,11,9,9,11],pat:'lob',mod:'pull',sp:'beam',fx:'swirl',shot:'crescent',tag:'dim',unlock:{boss:3},desc:'Abre rasgos no espaço para engolir inimigos.'},
  {id:'sombra',n:'Sombra',cat:'sobrenatural',c:'#8a5cf0',c2:'#2b1a55',title:'Espreitador',of:'da Sombra',st:[9,13,7,12,9],pat:'slash',mod:'fear',sp:'cone',fx:'smoke',shot:'crescent',tag:'shadow',unlock:null,desc:'Cortes furtivos e medo.'},
- {id:'espirito',k:1.05,n:'Espírito',cat:'sobrenatural',c:'#fff1a8',c2:'#9be7ff',title:'Guardião',of:'da Alma',st:[12,8,11,8,11],pat:'burst',mod:'drain',sp:'shield',fx:'spark',shot:'star',tag:'spirit',unlock:{lvl:11,boss:2},desc:'Sustento, proteção e luz sobre espectros.'}
+ {id:'espirito',k:1.05,n:'Espírito',cat:'sobrenatural',c:'#fff1a8',c2:'#9be7ff',title:'Guardião',of:'da Alma',st:[12,8,11,8,11],pat:'burst',mod:'drain',sp:'shield',fx:'spark',shot:'star',tag:'spirit',unlock:{boss:2},desc:'Sustento, proteção e luz sobre espectros.'}
 ];
 const P={};POWERS.forEach(p=>P[p.id]=p);
 
@@ -711,8 +719,12 @@ const MILESTONES=[
   {l:20,n:'Poder supremo',d:'Libera o golpe supremo da fusão.'},
   {l:30,n:'Forma lendária',d:'Aura dourada, +25% de dano e +25% de vida.'}
 ];
-function isUnlocked(id,s){const u=P[id].unlock;return !u||s.level>=u.lvl||(u.boss&&s.cleared[u.boss-1]);}
-const unlockText=id=>{const u=P[id].unlock;return u?`Nível ${u.lvl}${u.boss?` ou vencer o chefe do capítulo ${u.boss}`:''}`:''};
+const DIFFS=[{n:'Fácil',hp:.65,dmg:.6,rw:.8,drop:.2},{n:'Médio',hp:1,dmg:1,rw:1,drop:.12},{n:'Difícil',hp:1.5,dmg:1.45,rw:1.4,drop:.08,lv:.05},{n:'Ultra',hp:2.1,dmg:2,rw:1.9,drop:.05,lv:.07}];
+const REC_LV=[1,8,15]; // nível recomendado de cada capítulo
+// poderes já liberados ficam para sempre (SAVE.unl); os outros seguem as regras novas
+function isUnlocked(id,s){const u=P[id].unlock;if(!u||(s.unl&&s.unl.includes(id)))return true;
+  if(u.lvl)return s.level>=u.lvl;if(u.boss)return !!s.cleared[u.boss-1];if(u.diff)return ((s.dw||[])[u.diff[0]]??-1)>=u.diff[1];return false}
+const unlockText=id=>{const u=P[id].unlock;if(!u)return'';if(u.lvl)return`Nível ${u.lvl}`;if(u.boss)return`Vencer o chefe do capítulo ${u.boss}`;if(u.diff)return`Vencer o capítulo ${u.diff[0]+1} no ${DIFFS[u.diff[1]].n}`;return''};
 
 const UPGRADES=[
   {id:'dano',n:'Amplificador de dano',d:'+5% de dano por nível',max:10,base:40},
@@ -822,15 +834,19 @@ const MISSIONS=[
 /* ===== SAVE ===== */
 const SAVE_KEY='fusaoPrime.v1';
 const defSave=()=>({v:1,created:false,name:'Herói',body:'agil',level:1,xp:0,pts:0,attr:{vig:0,for:0,def:0,agi:0,ene:0},
-  coins:0,cry:0,core:'fogo',ess:'gelo',disc:{'fogo|gelo':1},cleared:[false,false,false],endlessBest:0,
+  coins:0,cry:0,core:'fogo',ess:'gelo',disc:{'fogo|gelo':1},cleared:[false,false,false],dw:[-1,-1,-1],diff:1,unl:[],unlV2:1,endlessBest:0,
   up:{dano:0,recarga:0,regen:0},skins:['padrao'],skin:'padrao',inv:[],eq:{amuleto:null,armadura:null,botas:null},
   claimed:{},ach:{},tutDone:false,stats:{kills:0,boss:0,dash:0,pguard:0,combo:0,fus:0,spec:0,jump:0,waves:0,sup:0},sound:true});
 function loadSave(){
   try{const raw=localStorage.getItem(SAVE_KEY);if(raw){const o=JSON.parse(raw),d=defSave();
-    return fixLeg(Object.assign(d,o,{attr:Object.assign(d.attr,o.attr),up:Object.assign(d.up,o.up),stats:Object.assign(d.stats,o.stats),eq:Object.assign(d.eq,o.eq)}));}}catch(e){}
+    return fixLeg(Object.assign(d,o,{unlV2:o.unlV2||0,attr:Object.assign(d.attr,o.attr),up:Object.assign(d.up,o.up),stats:Object.assign(d.stats,o.stats),eq:Object.assign(d.eq,o.eq)}));}}catch(e){}
   return defSave();
 }
-function fixLeg(sv){const keep={};let extra=0;
+function migrateUnl(sv){if(sv.unlV2)return sv;
+  const OLD={agua:{lvl:3},forca:{lvl:4},telecinese:{lvl:6},ilusao:{lvl:9},gravidade:{lvl:15},metal:{lvl:7,boss:1},nano:{lvl:17},teleporte:{lvl:13},fenda:{lvl:20,boss:3},espirito:{lvl:11,boss:2}};
+  sv.unl=Object.keys(OLD).filter(id=>{const u=OLD[id];return sv.level>=u.lvl||(u.boss&&sv.cleared[u.boss-1])});
+  sv.dw=(sv.cleared||[]).map(c=>c?1:-1);while(sv.dw.length<3)sv.dw.push(-1);sv.unlV2=1;return sv}
+function fixLeg(sv){migrateUnl(sv);const keep={};let extra=0;
   for(const it of sv.inv)if(it.rar===2&&(sv.eq[it.slot]===it.id))keep[it.slot]=it.id;
   sv.inv=sv.inv.filter(it=>{if(it.rar!==2)return true;if(!keep[it.slot]){keep[it.slot]=it.id;return true}if(keep[it.slot]===it.id)return true;extra++;return false});
   if(extra){sv.coins+=extra*SELL[2];sv.legFix=extra}return sv}
@@ -1782,10 +1798,10 @@ const Arena=(()=>{
   const shake=v=>{S.shake=Math.max(S.shake,v)};
   const nearest=(x,y,maxD)=>{let b=null,bd=maxD;for(const e of S.en){if(e.fade>0||e.dead)continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;b=e}}return b};
 
-  function newRun(mode,ch){
+  function newRun(mode,ch){const diff=mode==='endless'?1:clamp(SAVE.diff??1,0,3);
     F=makeFusion(SAVE.core,SAVE.ess);ST=calcStats(SAVE,F);
     const ev=ST.ev;
-    S={mode,ch,wi:0,state:'intro',stT:2.2,t:0,en:[],pb:[],eb:[],rings:[],novas:[],zones:[],beams:[],expl:[],slashes:[],tele:[],arcs:[],drops:[],later:[],fl:[],queue:[],spT:0,
+    S={mode,ch,diff,wi:0,state:'intro',stT:2.2,t:0,en:[],pb:[],eb:[],rings:[],novas:[],zones:[],beams:[],expl:[],slashes:[],tele:[],arcs:[],drops:[],later:[],fl:[],queue:[],spT:0,
       shake:0,flash:0,slow:0,combo:0,comboT:0,paused:false,hpS:1,dmgS:1,pullT:0,pullBoss:null,banner:'',bannerT:0,
       run:{xp:0,coins:0,cry:0,kills:0,items:[],unlocked:[]},orbit:null,hz:[],walls:[],
       p:{x:W/2,y:H*.62,vx:0,vy:0,r:13,hp:ST.maxHp,en:ST.maxEn,face:-Math.PI/2,dash:null,inv:0,jt:0,jd:.55,jCd:0,dCd:0,guard:false,guardT:0,gCd:0,aCd:0,s1:0,s2:0,sup:0,supInv:0,shield:0,shieldMax:0,slowT:0,hurt:0,stun:0,z:0}};
@@ -1799,7 +1815,7 @@ const Arena=(()=>{
     for(let k=S.thSeq.length;k<=b;k++){const prev=S.thSeq[k-1];let n;do{n=Math.floor(Math.random()*3)}while(n===prev);S.thSeq[k]=n}return S.thSeq[b]}
   function setScale(){
     if(S.mode==='endless'){const n=S.wi;S.hpS=4.2*Math.pow(1.05,n);S.dmgS=5.6*Math.pow(1.045,n)}
-    else{S.hpS=[1,2.1,3.3][S.ch]+.07*S.wi;S.dmgS=[1.9,3.4,5][S.ch]*(1+.04*S.wi)}
+    else{const D=DIFFS[S.diff],lv=D.lv?Math.min(2,1+D.lv*Math.max(0,SAVE.level-REC_LV[S.ch])):1;S.hpS=([1,2.1,3.3][S.ch]+.07*S.wi)*D.hp*lv;S.dmgS=[1.9,3.4,5][S.ch]*(1+.04*S.wi)*D.dmg*lv}
   }
   function waveDef(){
     if(S.mode!=='endless')return CHAPTERS[S.ch].waves[S.wi];
@@ -1899,12 +1915,16 @@ const Arena=(()=>{
     const q=S.say;if(q&&q.t>0){bubEl.hidden=false;bubEl.classList.add('say');$('#cineWho').textContent=q.name;bubEl.style.setProperty('--bc',q.col);
       if($('#cineTxt').textContent!==q.text)$('#cineTxt').textContent=q.text;bubEl.style.opacity=Math.min(1,q.t*3);bubPos(q.x,q.y-q.r*2.3,q.y+q.r,1,q.x,q.y)}
     else{bubEl.hidden=true;bubEl.style.opacity=''}}
+  function endMilestone(){const w=S.wi;SAVE.endM=SAVE.endM||{};if((w!==25&&w!==50)||SAVE.endM[w])return;SAVE.endM[w]=1;
+    const cry=w===25?15:30;SAVE.cry+=cry;S.run.cry+=cry;let it;if(w===50){const free=Object.keys(SLOT_INFO).filter(k=>!hasLeg(k));it=makeItem(free.length?2:1,free[0])}else it=makeItem(1);
+    SAVE.inv.push(it);S.run.items.push(it);persist();toast(`Marco da onda ${w}: +${cry} cristais e ${it.n}`)}
   function bossKey(){return S.mode==='endless'?['ferrugem','veu','prisma'][endTh()]:CHAPTERS[S.ch].boss}
   function spawn(kind){
     let x,y,tries=0;do{const side=Math.floor(Math.random()*4);
       x=side<2?rnd(M+20,W-M-20):(side===2?M+10:W-M-10);y=side<2?(side===0?M+40:H-M-10):rnd(M+50,H-M-20);tries++}while(dst({x,y},S.p)<150&&tries<8);
     if(kind==='boss'){const key=bossKey(),B=BOSSES[key];
-      const e={key,th:['ferrugem','veu','prisma'].indexOf(key),boss:true,name:B.name,type:B.type,col:B.col,col2:B.col2,x:W/2,y:M+125,r:B.r,spd:B.spd,dmg:B.contact,phase:0,ai:'boss',B,xp:300,coin:60,cry:B.hp>1600?4:3};
+      const XTRA={ferrugem:'slam',veu:'pull',prisma:'spiral'},dv=S.mode==='endless'?1:S.diff,BB=dv<2?B:Object.assign({},B,{phases:B.phases.map(p=>({seq:dv>=3?[...p.seq,XTRA[key]]:p.seq,gap:p.gap*(dv>=3?.8:.9)}))});
+      const e={key,th:['ferrugem','veu','prisma'].indexOf(key),boss:true,name:B.name,type:B.type,col:B.col,col2:B.col2,x:W/2,y:M+125,r:B.r,spd:B.spd,dmg:B.contact,phase:0,ai:'boss',B:BB,xp:300,coin:60,cry:B.hp>1600?4:3};
       e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);if(S.mode==='camp')cineStart(e);return}
     if(kind==='mini'){const m=MINIS[S.mode==='endless'?endTh():S.ch];
       const e={key:'mini',mini:true,th:S.mode==='endless'?endTh():S.ch,name:m.n,type:m.type,col:m.col,x,y,r:26,spd:62,dmg:20,ai:'brute',xp:140,coin:30,cry:2};e.maxHp=e.hp=520*S.hpS;S.en.push(initE(e));return}
@@ -1964,11 +1984,11 @@ const Arena=(()=>{
     if(e.dead)return;if(e.links)e.links.forEach(l=>{l.t.guardBy=null});if(e.dummy){e.dead=true;parts.burst(e.x,e.y,e.col,18,160,3.5,.5);Snd.play('kill');return}
     e.dead=true;SAVE.stats.kills++;S.run.kills++;
     parts.burst(e.x,e.y,e.col,e.boss?60:14,e.boss?320:150,e.boss?5:3.5,e.boss?1:.5);Snd.play('kill');shake(e.boss?14:2);
-    awardXP(e.xp*(1+.35*(S.mode==='endless'?4:S.ch))*(S.mode==='endless'?1+.02*S.wi:1),e.x,e.y);
-    const co=Math.round(e.coin*(1+.15*S.ch));SAVE.coins+=co;S.run.coins+=co;
+    const rw=S.mode==='endless'?1:DIFFS[S.diff].rw;awardXP(e.xp*rw*(1+.35*(S.mode==='endless'?4:S.ch))*(S.mode==='endless'?1+.02*S.wi:1),e.x,e.y);
+    const co=Math.round(e.coin*rw*(1+.15*S.ch));SAVE.coins+=co;S.run.coins+=co;
     if(e.cry){SAVE.cry+=e.cry;S.run.cry+=e.cry}
-    if(!e.boss&&!e.mini&&Math.random()<.12)S.drops.push({x:e.x,y:e.y,t:9});
-    if(e.mini||e.boss){const rar=e.boss?(Math.random()<.35?2:1):(Math.random()<.25?1:0);const it=makeItem(rar);SAVE.inv.push(it);S.run.items.push(it)}
+    if(!e.boss&&!e.mini&&Math.random()<(S.mode==='endless'?.12:DIFFS[S.diff].drop))S.drops.push({x:e.x,y:e.y,t:9});
+    if(e.mini||e.boss){const up=S.mode==='endless'?0:Math.max(0,S.diff-1)*.15;const rar=e.boss?(Math.random()<.35+up?2:1):(Math.random()<.25+up?1:0);const it=makeItem(rar);SAVE.inv.push(it);S.run.items.push(it)}
     if(e.boss){SAVE.stats.boss++;S.state='bossdead';S.stT=1.6;if(CINE[e.key])bossSay(e,CINE[e.key].die,2.2);S.bossE=null;hud.hBoss.hidden=true;S.slow=.8;
       S.eb.length=0;S.beams.length=0;S.later.length=0;S.rings.length=0;stopDrones();S.hz.length=0;S.walls.length=0;S.en.forEach(x=>{if(x!==e&&!x.dead){x.dead=true;parts.burst(x.x,x.y,x.col,8)}})}
     persist();
@@ -2364,7 +2384,7 @@ const Arena=(()=>{
         persist();}
     }
     else if(S.state==='between'){S.stT-=dt;if(S.stT<=0){S.wi++;startWave()}}
-    else if(S.state==='bossdead'){S.stT-=dt;if(S.stT<=0){if(S.mode==='endless'){S.wi++;S.state='between';S.stT=1.2}else win()}}
+    else if(S.state==='bossdead'){S.stT-=dt;if(S.stT<=0){if(S.mode==='endless'){S.wi++;S.state='between';S.stT=1.2;endMilestone()}else win()}}
     if(S.state==='lose'||S.state==='win'){parts.update(dt);return}
     updPlayer(dt);if(S.walls.length)resolveWalls();
     for(const e of S.en)if(!e.dead)updEnemy(e,dt);
@@ -2592,27 +2612,35 @@ const Arena=(()=>{
       <div class="opts"><button class="btn pri" data-act="retry">Tentar novamente</button><button class="btn" data-act="go" data-arg="lab">Ajustar fusão</button><button class="btn" data-act="go" data-arg="map">Voltar ao mapa</button></div>`);
   }
   function win(){
-    S.state='win';AUD.music(null);AUD.play('j_win',{vol:.8});setTimeout(()=>AUD.voice('v_win',0),700);setTimeout(()=>{if(S&&S.state==='win')AUD.music('title')},3500);const ch=CHAPTERS[S.ch],r=ch.reward,first=!SAVE.cleared[S.ch];
-    SAVE.cleared[S.ch]=true;
-    const before=POWERS.filter(p=>p.unlock&&p.unlock.boss===S.ch+1).map(p=>p.n);
-    if(first){SAVE.coins+=r.coins;SAVE.cry+=r.cry;S.run.coins+=r.coins;S.run.cry+=r.cry;awardXP(r.xp);if(before.length)S.run.unlocked.push(...before)}
+    S.state='win';AUD.music(null);AUD.play('j_win',{vol:.8});setTimeout(()=>AUD.voice('v_win',0),700);setTimeout(()=>{if(S&&S.state==='win')AUD.music('title')},3500);const ch=CHAPTERS[S.ch],D=DIFFS[S.diff],rw0=CHAPTERS[S.ch].reward,r={xp:Math.round(rw0.xp*D.rw),coins:Math.round(rw0.coins*D.rw),cry:Math.round(rw0.cry*D.rw)+(S.diff===3?20:0)};
+    SAVE.dw=SAVE.dw||[-1,-1,-1];const was=POWERS.filter(p=>isUnlocked(p.id,SAVE)).map(p=>p.id),first=(SAVE.dw[S.ch]??-1)<S.diff;
+    SAVE.cleared[S.ch]=true;if(first)SAVE.dw[S.ch]=S.diff;
+    const before=POWERS.filter(p=>!was.includes(p.id)&&isUnlocked(p.id,SAVE)).map(p=>p.n);
+    if(first){SAVE.coins+=r.coins;SAVE.cry+=r.cry;S.run.coins+=r.coins;S.run.cry+=r.cry;awardXP(r.xp);
+      if(S.diff===3){const free=Object.keys(SLOT_INFO).filter(k=>!hasLeg(k));if(free.length){const it=makeItem(2,free[0]);SAVE.inv.push(it);S.run.items.push(it)}}}
+    if(before.length)S.run.unlocked.push(...before)
     checkAch();persist(true);
     const next=S.ch<2;
-    showOv(`<span class="lab-tag">Capítulo ${S.ch+1} concluído</span><h2>${BOSSES[ch.boss].name} foi derrotado</h2>
-      <p class="mut">${first?`Recompensa: ${r.xp} XP, ${r.coins} moedas, ${r.cry} cristais.`:'Capítulo já concluído; ganhos da rodada mantidos.'}</p>
+    showOv(`<span class="lab-tag">Capítulo ${S.ch+1} concluído · ${D.n}</span><h2>${BOSSES[ch.boss].name} foi derrotado</h2>
+      <p class="mut">${first?`Recompensa do ${D.n}: ${r.xp} XP, ${r.coins} moedas, ${r.cry} cristais${S.diff===3?' e um lendário que faltava':''}.`:`Já vencido no ${D.n}; ganhos da rodada mantidos.`}</p>
       ${S.run.items.length?`<p>Itens: ${S.run.items.map(i=>`<b>${i.n}</b> (${RARITY[i.rar]})`).join(', ')}</p>`:''}
       ${S.run.unlocked.length?`<p><span class="tag good">Desbloqueado</span> ${S.run.unlocked.join(', ')}</p>`:''}
       <div class="opts">${next?`<button class="btn pri" data-act="play" data-arg="${S.ch+1}">Próximo capítulo</button>`:'<button class="btn pri" data-act="play" data-arg="endless">Modo infinito</button>'}<button class="btn" data-act="go" data-arg="lab">Laboratório de fusão</button><button class="btn" data-act="go" data-arg="map">Voltar ao mapa</button></div>`);
   }
   function showIdle(){
     const next=CHAPTERS.findIndex((c,i)=>!SAVE.cleared[i]&&(i===0||SAVE.cleared[i-1]));
-    const ops=CHAPTERS.map((c,i)=>{const open=i===0||SAVE.cleared[i-1],done=SAVE.cleared[i];
-      const st=done?'<span class="mis-st ok">Concluído</span>':open?'<span class="mis-st new">Jogar</span>':`<span class="mis-st lock">Vença o Cap. ${i}</span>`;
-      return`<button class="mis-ch ${i===next?'next':''}" ${open?'':'disabled'} data-act="play" data-arg="${i}"><span class="mis-n">${i+1}</span><span><b>${c.name}</b><small>${c.sub} · Chefe: ${BOSSES[c.boss].name}</small></span>${st}</button>`}).join('');
+    const dsel=clamp(SAVE.diff??1,0,3),dw=SAVE.dw||[-1,-1,-1];
+    const prize=i=>{const L=POWERS.filter(p=>p.unlock&&((p.unlock.boss===i+1)||(p.unlock.diff&&p.unlock.diff[0]===i&&p.unlock.diff[1]===dsel))&&!isUnlocked(p.id,SAVE));return L.length?` · Libera: ${L.map(p=>p.n).join(', ')}`:''};
+    const ops=CHAPTERS.map((c,i)=>{const open=i===0||SAVE.cleared[i-1],ultraLock=dsel===3&&(dw[i]??-1)<2,ok=open&&!ultraLock,won=(dw[i]??-1)>=dsel;
+      const stars=`<span class="mis-stars">${DIFFS.map((d,k)=>`<i class="${(dw[i]??-1)>=k?'on':''}" title="${d.n}">★</i>`).join('')}</span>`;
+      const st=!open?`<span class="mis-st lock">Vença o Cap. ${i}</span>`:ultraLock?'<span class="mis-st lock">Vença no Difícil</span>':won?'<span class="mis-st ok">Vencido</span>':'<span class="mis-st new">Jogar</span>';
+      return`<button class="mis-ch ${i===next?'next':''}" ${ok?'':'disabled'} data-act="play" data-arg="${i}"><span class="mis-n">${i+1}</span><span><b>${c.name}</b><small>${c.sub} · Chefe: ${BOSSES[c.boss].name}${prize(i)}</small>${stars}</span>${st}</button>`}).join('');
+    const diffs=`<div class="mis-diff" role="radiogroup" aria-label="Dificuldade">${DIFFS.map((d,k)=>`<button class="${k===dsel?'on':''} d${k}" data-act="diff" data-arg="${k}" role="radio" aria-checked="${k===dsel}">${d.n}</button>`).join('')}</div>
+      <p class="mis-dtx">${['Inimigos mais fracos e mais cura no chão. Recompensas menores.','O jogo como foi pensado.','Inimigos mais fortes e chefes mais rápidos. Acompanha o seu nível. Libera poderes raros.','Para quem venceu no Difícil: chefes com um ataque a mais. Dá cristais e um lendário.'][dsel]}</p>`;
     const inf=SAVE.cleared[0];
     setTimeout(()=>Coach.auto('arena'),600);
     showOv(`<span class="lab-tag">Arena de combate</span><h2>Escolha a missão</h2><div class="mis">
-      <span class="mis-sec">Campanha</span><div class="mis" id="misChs">${ops}</div>
+      <span class="mis-sec">Campanha</span>${diffs}<div class="mis" id="misChs">${ops}</div>
       <span class="mis-sec">Desafio</span>
       <button class="mis-ch inf" ${inf?'':'disabled'} data-act="play" data-arg="endless"><span class="mis-n">∞</span><span><b>Modo infinito</b><small>${inf?`Ondas sem fim · recorde: onda ${SAVE.endlessBest||0}`:'Libera ao vencer o Capítulo 1'}</small></span>${inf?'<span class="mis-st new">Jogar</span>':'<span class="mis-st lock">Bloqueado</span>'}</button>
       <button class="btn mis-back" data-act="go" data-arg="menu">Voltar ao menu</button>
@@ -2970,6 +2998,7 @@ document.addEventListener('click',e=>{
     case 'go':show(arg);break;
     case 'more':{const open=sheet.hidden;sheet.hidden=!open;$('#moreBtn').setAttribute('aria-expanded',open);break}
     case 'play':show('arena');Arena.start(arg);break;
+    case 'diff':SAVE.diff=+arg;persist();Arena.showIdle();break;
     case 'retry':Arena.retry();break;
     case 'intro':Intro.open(true);break;
     case 'introgo':Intro.play();break;
@@ -3115,13 +3144,14 @@ const Coach=(()=>{
       {sel:'#labSlots .slot[data-arg=core]',n:'Núcleo: a forma do ataque',d:()=>{const f=F();return`O <b>núcleo</b> (${f.A.n}) define o <b>ataque básico</b> (${PAT[f.pat].n}), a <b>habilidade I</b> (${esc(f.sp1.name)}) e a cabeça do herói. Vale 55% dos atributos.`}},
       {sel:'#labSlots .slot[data-arg=ess]',n:'Essência: o efeito',d:()=>{const f=F();return`A <b>essência</b> (${f.B.n}) põe um <b>efeito</b> em todo ataque: ${MODS[f.mod].n.toLowerCase()}, que ${MODS[f.mod].d}. Dá a <b>habilidade II</b> (${esc(f.sp2.name)}) e os ombros. Vale 45% dos atributos.`}},
       {sel:'#labSlots .swap',n:'A ordem muda tudo',d:()=>{const f=F(),g=makeFusion(f.b,f.a);return`${f.A.n} + ${f.B.n} não é igual a ${f.B.n} + ${f.A.n}. Invertendo, o ataque vira <b>${PAT[g.pat].n}</b> com <b>${MODS[g.mod].n.toLowerCase()}</b>. Toque em ⇄ para testar.`}},
-      {sel:'#labPick',n:'Escolhendo poderes',d:()=>'Toque em <b>Núcleo</b> ou <b>Essência</b> e depois em um poder desta lista. Poderes com <b>cadeado</b> liberam ao subir de nível ou vencendo chefes: Metal, Espírito e Fenda Dimensional são prêmios da campanha.'},
+      {sel:'#labPick',n:'Escolhendo poderes',d:()=>'Toque em <b>Núcleo</b> ou <b>Essência</b> e depois em um poder desta lista. Poderes com <b>cadeado</b> mostram como liberar: alguns pelo nível, outros só na campanha. Metal, Espírito e Fenda Dimensional saem dos chefes; Teletransporte, Gravidade e Nanotecnologia saem vencendo capítulos no <b>Difícil</b>.'},
       {sel:'#labRes > div:first-child',n:'Combinação dos poderes',d:()=>`Toda fusão tem uma relação:<br>• <b>Harmônica</b> (mesma categoria ou par que combina): +15% de energia, −6% de recarga.<br>• <b>Instável</b> (opostos, como Fogo e Gelo): +12% de dano, −10% de vida.<br>• <b>Equilibrada</b>: +4% de dano, +6% de defesa.<br>Esta é <b>${F().rel.n.toLowerCase()}</b>.`},
       {sel:'#labRes .chips',n:'Forte contra quem',d:()=>{const f=F(),st=tags(f);return`Inimigos são <b>Orgânicos, Blindados, Energéticos ou Espectrais</b>. Verde é dano extra, vermelho é dano reduzido. ${st?`Esta fusão é forte contra <b>${st}</b>.`:'Esta fusão não tem vantagem marcante.'} Troque de fusão conforme o capítulo.`}},
       {sel:'#labRes .abil',n:'Habilidades e evolução',d:()=>'A <b>habilidade I</b> já vem liberada. A <b>II</b> chega no nível 10, o <b>Supremo</b> no 20 e a <b>forma lendária</b> no 30. Cada poder tem som próprio: ao usar uma habilidade, você ouve os dois poderes da fusão.'},
       {sel:'#labRes .row .btn,#labBar .btn',n:'Confirme e descubra',d:()=>'<b>Confirmar</b> troca a fusão do herói, quantas vezes quiser. Cada fusão nova entra em <b>Descobertas</b>, e algumas são <b>lendárias</b>, com nome próprio.'}],
     arena:[
-      {sel:'#misChs',n:'Escolha a missão',d:()=>'Cada <b>capítulo</b> tem 6 ondas: três de inimigos, uma com <b>mini chefe</b>, mais uma de inimigos e o <b>chefe</b> no final. Os capítulos liberam em ordem: vença um para abrir o próximo.'},
+      {sel:'.mis-diff',n:'Dificuldade',d:()=>'<b>Fácil</b>, <b>Médio</b>, <b>Difícil</b> e <b>Ultra</b>. Quanto mais difícil, mais XP, moedas e itens melhores. Vencer no Difícil libera poderes raros; o Ultra abre depois do Difícil. Cada estrela no capítulo é uma dificuldade vencida.'},
+      {sel:'#misChs',n:'Escolha a missão',d:()=>'Cada <b>capítulo</b> tem 6 ondas: três de inimigos, uma com <b>mini chefe</b>, mais uma de inimigos e o <b>chefe</b> no final. Os capítulos liberam em ordem: vença um para abrir o próximo. Alguns poderes só saem aqui.'},
       {sel:'#ov [data-act=tutorial]',n:'Tutorial de combate',d:()=>'Ensina mover, atacar, esquivar, pular, defender e usar habilidades com um alvo de treino. Pode rever quando quiser.'},
       {sel:'#ov [data-arg=endless]',n:'Modo infinito',d:()=>'Libera depois do Capítulo 1. As ondas não acabam, a dificuldade sobe e aparece um chefe a cada 5 ondas. Seu recorde fica salvo.'},
       {sel:'#field',n:'Durante a luta',d:()=>'Barra <b>vermelha</b> é vida, <b>azul</b> é energia (gasta nas habilidades) e a <b>dourada</b> carrega o Supremo. Inimigos dão <b>XP e moedas</b>, às vezes deixam uma <b>cruz verde</b> que cura, e mini chefes e chefes deixam <b>equipamentos</b>.'},

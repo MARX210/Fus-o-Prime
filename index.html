@@ -278,10 +278,17 @@ input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line
   body.arena-on .field{position:absolute;inset:0}
   body.arena-on .deck{position:absolute;inset:0;background:none;border:0}
   body.arena-on .joyz{left:0;bottom:0;width:56%;height:72%;min-width:0}
-  body.arena-on .btns{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-  body.arena-on .skbar{left:auto;right:max(10px,env(safe-area-inset-right,0px));transform:none;bottom:calc(132px + env(safe-area-inset-bottom,0px));flex-direction:column;align-items:flex-end;gap:7px;padding:0;background:none;border:0;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none}
-  body.arena-on .skbar .ab.sk{height:40px;padding:0 12px}
-  body.arena-on .skbar .ab.sk.big{height:46px;padding:0 15px}
+  /* faixa de baixo: ATACAR no canto, especiais em cima e movimentos embaixo, lado a lado */
+  body.arena-on .btns{right:max(10px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:240px;height:100px}
+  body.arena-on .btns .ab{width:46px;height:46px;font-size:.54rem}
+  body.arena-on .btns .ab svg{width:18px;height:18px}
+  body.arena-on #bGuard{right:192px;bottom:0}body.arena-on #bJump{right:138px;bottom:0}body.arena-on #bDash{right:84px;bottom:0}
+  body.arena-on .btns .ab.atk{right:0;bottom:12px;width:76px;height:76px;font-size:.64rem}
+  body.arena-on .btns .ab.atk svg{width:28px;height:28px}
+  body.arena-on .skbar{left:auto;right:calc(max(10px,env(safe-area-inset-right,0px)) + 84px);transform:none;bottom:calc(62px + env(safe-area-inset-bottom,0px));flex-direction:row;gap:8px;padding:0;background:none;border:0;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+  body.arena-on .skbar .ab.sk,body.arena-on .skbar .ab.sk.big{width:46px;height:46px;padding:0;border-radius:50%;flex-direction:column;gap:1px;font-size:.5rem}
+  body.arena-on .skbar .ab.sk svg{width:17px;height:17px}
+  body.arena-on .joyb{width:104px;height:104px}
   /* controles translúcidos: ficam fortes só quando tocados */
   body.arena-on .deck .ab{opacity:.5;transition:opacity .12s,box-shadow .15s,border-color .15s}
   body.arena-on .deck .ab.rdy:not(.locked){opacity:.72}
@@ -1734,8 +1741,7 @@ const Arena=(()=>{
     // em pé no celular: controles por cima do campo; o herói não desce para trás deles
     if(portrait){
       const bt=$('#btns').getBoundingClientRect(),sb=$('#skbar').getBoundingClientRect();
-      if(bt.height)OB=Math.max(0,Math.round(r.bottom-bt.top+12));
-      if(sb.height)XR={x:sb.left-r.left-16,y:sb.top-r.top-OT-24}}
+      const tp=Math.min(bt.height?bt.top:1e9,sb.height?sb.top:1e9);if(tp<1e9)OB=Math.max(0,Math.round(r.bottom-tp+14))}
     H=Math.max(200,FH-OT-OB);
     if(S)clampP(S.p)}
   function clampP(p){p.x=clamp(p.x,M,W-M);p.y=clamp(p.y,M+26,H-M);

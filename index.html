@@ -2278,7 +2278,7 @@ function matOf(e){if(['sapo','vigia','gemeas','ambar','prisma'].includes(e.key)|
   if(['veu','leque','estand'].includes(e.key)||(e.mini&&e.th===1))return'wood';return'flesh'}
 class Particles{
   constructor(){this.a=[]}
-  add(p){if(this.a.length<500)this.a.push(p)}
+  add(p){if(this.a.length<(window.PART_CAP||500))this.a.push(p)}
   emit(style,x,y,col,s=1){
     const r=Math.random,A=this.add.bind(this);
     switch(style){
@@ -2329,14 +2329,15 @@ function drawShot(c,b,t){
 
 const Arena=(()=>{
   const cv=$('#cv'),ctx=cv.getContext('2d'),aw=$('#field'),ov=$('#ov');
+  const QS=[1,.8,.62,.5];let QL=0,qAcc=0,qN=0,qT=0,bgCv=null,bgKey='';
   let W=600,H=400,FH=400,OT=0,OB=0,XR=null,dpr=1,S=null,F=null,ST=null,raf=0,lastT=0,active=false;
   const parts=new Particles(),keys={},held={atk:false,guard:false},trig={},joy={x:0,y:0,on:false,id:-1};
   const M=16;
   const hud={};['hLv','hHpT','hHp','hEn','hSup','hSupT','hSupB','hWave','hBoss','hBossN','hBossF','hCombo','hXp','bSup','bSp1','bSp2','bDash','bJump','bGuard'].forEach(k=>hud[k]=$('#'+k));
   const ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x), dst=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 
-  function resize(){const r=aw.getBoundingClientRect();if(r.width<50||r.height<50)return;W=Math.max(260,Math.floor(r.width));FH=Math.max(200,Math.floor(r.height));dpr=Math.min(2,window.devicePixelRatio||1);
-    cv.width=W*dpr;cv.height=FH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  function resize(){const r=aw.getBoundingClientRect();if(r.width<50||r.height<50)return;W=Math.max(260,Math.floor(r.width));FH=Math.max(200,Math.floor(r.height));dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1)*QS[QL]);
+    cv.width=Math.round(W*dpr);cv.height=Math.round(FH*dpr);bgKey='';ctx.setTransform(dpr,0,0,dpr,0,0);
     // topo: o mundo começa abaixo das barras (vida/energia/supremo) e da faixa da barra do chefe
     const hl=$('.hud-l',aw).getBoundingClientRect(),hr=$('.hud-r',aw).getBoundingClientRect(),bs=hud.hBoss.style;
     OT=0;OB=0;XR=null;
@@ -2893,6 +2894,8 @@ const Arena=(()=>{
   function updEnemy(e,dt){
     const p=S.p;
     for(const k of['hitT','stunT','slowT','fearT','armorT','hitCd','tele','arm','fade','flash','expose','snapT'])if(e[k]>0)e[k]=Math.max(0,e[k]-dt);
+    // segurança: nenhum inimigo fica intocável por mais de 5 segundos seguidos
+    if((e.inv>0||(e.fade>0&&!e.boss))&&!e.fake){e.lockT=(e.lockT||0)+dt;if(e.lockT>5){e.inv=0;e.fade=0;e.lockT=0;if(e.st==='hidden'||e.st==='wait'||e.st==='under'||e.st==='warn'){e.st='move';e.stT=0}}}else e.lockT=0;
     if(!e.boss&&e.inv>0&&e.st!=='hidden'&&e.st!=='wait'&&e.st!=='under'&&e.st!=='warn')e.inv=Math.max(0,e.inv-dt);
     if(e.burnT>0){e.burnT-=dt;e.hp-=e.burnDps*dt;e.hitT=Math.max(e.hitT,.03);if(e.hp<=0){kill(e);return}}
     e.x+=e.kx*dt;e.y+=e.ky*dt;e.kx*=1-5*dt;e.ky*=1-5*dt;
@@ -3500,7 +3503,7 @@ const Arena=(()=>{
       if(lk)cutLinks(b.x,b.y,b.r+5);
       if(Math.random()<.5)parts.add({x:b.x,y:b.y,vx:0,vy:0,life:.25,max:.25,sz:b.r*.7,col:b.col,sh:'c'});
       let gone=b.life<=0||b.x<-20||b.x>W+20||b.y<-20||b.y>H+20;
-      if(!gone)for(const e of S.en){if(e.dead||b.hit.has(e)||(e.fade>0&&!e.boss))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r||(e.sats&&e.sats.some(q=>Math.hypot(q.x-b.x,q.y-b.y)<13+b.r))){
+      if(!gone)for(const e of S.en){if(e.dead||b.hit.has(e)||(e.fade>0&&!e.boss))continue;if(segD(b.x,b.y,e.x,e.y-(e.jz||0),e.x,e.y-(e.jz||0)-e.r*(e.boss||e.mini?1.4:1.1))<e.r*1.15+b.r||(e.sats&&e.sats.some(q=>Math.hypot(q.x-b.x,q.y-b.y)<13+b.r))){
         b.hit.add(e);hitEnemy(e,b.dmg,{mods:b.mods,special:b.special,dir:Math.atan2(b.vy,b.vx)});
         if(b.aoe){explodeAt(b.x,b.y,b.aoe,b.dmg*.5,[],{});gone=true;break}
         if(b.pierce>0)b.pierce--;else{gone=true;break}}}
@@ -3545,14 +3548,16 @@ const Arena=(()=>{
   function draw(){
     const t=performance.now()/1000;const c=ctx;
     const ch=S?(S.mode==='endless'?CHAPTERS[endTh()].bg:CHAPTERS[S.ch].bg):['#0d1020','#171c30'];
-    c.setTransform(dpr,0,0,dpr,0,0);
-    const g=c.createLinearGradient(0,0,0,FH);g.addColorStop(0,ch[0]);g.addColorStop(1,ch[1]);c.fillStyle=g;c.fillRect(0,0,W,FH);
-    const bi=S&&S.mode!=='endless'?ARENA_BG[S.ch]:(S?ARENA_BG[endTh()]:null);
-    if(bi&&bi.complete&&bi.naturalWidth){const k=Math.max(W/bi.naturalWidth,FH/bi.naturalHeight),dw=bi.naturalWidth*k,dh=bi.naturalHeight*k;c.drawImage(bi,(W-dw)/2,(FH-dh)/2,dw,dh);c.fillStyle='rgba(6,8,16,.38)';c.fillRect(0,0,W,FH)}
-    if(OT>0||OB>0){c.fillStyle='rgba(4,6,12,.32)';if(OT>0)c.fillRect(0,0,W,OT);if(OB>0)c.fillRect(0,FH-OB,W,OB)}
+    const bi=S&&S.mode!=='endless'?ARENA_BG[S.ch]:(S?ARENA_BG[endTh()]:null),biOk=!!(bi&&bi.complete&&bi.naturalWidth);
+    const key=[W,FH,H,OT,OB,dpr,ch[0],biOk?bi.src.length+bi.src.slice(-24):'-'].join('|');
+    if(key!==bgKey){bgKey=key;bgCv=bgCv||document.createElement('canvas');bgCv.width=cv.width;bgCv.height=cv.height;const b=bgCv.getContext('2d');b.setTransform(dpr,0,0,dpr,0,0);
+      const g=b.createLinearGradient(0,0,0,FH);g.addColorStop(0,ch[0]);g.addColorStop(1,ch[1]);b.fillStyle=g;b.fillRect(0,0,W,FH);
+      if(biOk){const k=Math.max(W/bi.naturalWidth,FH/bi.naturalHeight),dw=bi.naturalWidth*k,dh=bi.naturalHeight*k;b.drawImage(bi,(W-dw)/2,(FH-dh)/2,dw,dh);b.fillStyle='rgba(6,8,16,.38)';b.fillRect(0,0,W,FH)}
+      if(OT>0||OB>0){b.fillStyle='rgba(4,6,12,.32)';if(OT>0)b.fillRect(0,0,W,OT);if(OB>0)b.fillRect(0,FH-OB,W,OB)}
+      b.translate(0,OT);b.strokeStyle='#ffffff08';b.lineWidth=1;b.beginPath();for(let x=M;x<W;x+=48){b.moveTo(x,0);b.lineTo(x,H)}for(let y=M;y<H;y+=48){b.moveTo(0,y);b.lineTo(W,y)}b.stroke();
+      b.strokeStyle='#ffffff22';b.lineWidth=2;rr(b,M/2,M/2+4,W-M,H-M-4,10);b.stroke()}
+    c.setTransform(1,0,0,1,0,0);c.drawImage(bgCv,0,0);c.setTransform(dpr,0,0,dpr,0,0);
     c.translate(0,OT);
-    c.strokeStyle='#ffffff08';c.lineWidth=1;for(let x=M;x<W;x+=48){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke()}for(let y=M;y<H;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()}
-    c.strokeStyle='#ffffff22';c.lineWidth=2;rr(c,M/2,M/2+4,W-M,H-M-4,10);c.stroke();
     if(!S){return}
     c.save();if(S.shake>0)c.translate(rnd(-S.shake,S.shake),rnd(-S.shake,S.shake));
     if(S.cine){const q=S.cine;c.translate(0,q.dy);c.translate(q.fx,q.fy);c.scale(q.z,q.z);c.translate(-q.fx,-q.fy)}
@@ -3614,6 +3619,8 @@ const Arena=(()=>{
     raf=requestAnimationFrame(loop);
     const dt=Math.min(.05,(ts-lastT)/1000||0);lastT=ts;
     if(!active)return;
+    if(dt>0&&active&&S&&!S.paused){qAcc+=dt;qN++;qT+=dt;if(qT>2.5){const avg=qAcc/qN;qAcc=qN=qT=0;
+      if(avg>.026&&QL<QS.length-1){QL++;window.PART_CAP=[500,300,200,140][QL];resize()}else if(avg<.0175&&QL>0&&Math.random()<.25){QL--;window.PART_CAP=[500,300,200,140][QL];resize()}}}
     try{update(dt);draw();updHud();cineDom();tutEl.hidden=!(S&&S.state==='tut')}catch(err){console.error(err)}
   }
 

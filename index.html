@@ -1615,138 +1615,159 @@ function rigWisp(v,P){
   root.body=body;
   return{root,k:2.2,pose(e,t){const r=this.root;r.t[1]=.55+Math.sin(t*3+e.seed)*.06;const w=Math.sin(t*5+e.seed)*.04;r.body.s=[1+w,1-w,1+w];r.body.r[0]=e.v*.25}}
 }
-/* --- Lebre Orbital --- */
-function rigLebre(){
-  const root=node([0,.05,0]),body=node([0,.42,0]);root.kids.push(body);
-  body.parts.push(P3(mSph(8,6),'#d8c4ff',[0,0,0],null,[.24,.22,.46]),P3(mSph(7,5),'#efe4ff',[0,-.06,.1],null,[.18,.14,.3]));
-  for(const[z,c]of[[-.1,'#b48cff'],[.12,'#ffe9b0']])body.parts.push(P3(mBox(),c,[0,.12,z],null,[.02,.02,.16],em({gr:.04})));
-  const head=node([0,.14,.42]);head.parts.push(P3(mSph(7,5),'#e6d8ff',[0,0,0],null,[.15,.14,.18]),P3(mSph(4,3),'#fff2b0',[-.08,.03,.13],null,[.035,.03,.02],em({gr:.08})),P3(mSph(4,3),'#fff2b0',[.08,.03,.13],null,[.035,.03,.02],em({gr:.08})));
-  for(const sd of[-1,1]){const ear=node([sd*.06,.12,-.02]);ear.r=[-.45,0,sd*.2];ear.parts.push(P3(mTc(1,.4,5),'#e6d8ff',[0,0,0],null,[.05,.5,.025]),P3(mTc(1,.3,5),'#ffe9b0',[0,.25,.01],null,[.03,.22,.015],em({gr:.06})));head.kids.push(ear)}
-  body.kids.push(head);
-  root.legs=[];for(const[x,z]of[[-.14,.28],[.14,.28],[-.15,-.28],[.15,-.28]]){const lg=node([x,.36,z]);lg.parts.push(P3(mTc(1,.6,5),'#c9b2ff',[0,-.34,0],null,[.05,.34,.05]),P3(mBox(),'#efe4ff',[0,-.36,.04],null,[.07,.04,.12]));root.kids.push(lg);root.legs.push(lg)}
-  const tail=node([0,.5,-.46]);tail.parts.push(P3(mSph(5,4),'#fff',[0,0,0],null,[.09,.09,.09]));root.kids.push(tail);
-  const orb=node([0,.45,0],[],[],{spin:{ax:1,w:2.2}});for(let i=0;i<4;i++){const q=i/4*TAU;orb.parts.push(P3(mOct(4),'#8a7aa0',[Math.cos(q)*.7,Math.sin(i*1.7)*.1,Math.sin(q)*.7],[q,q,0],[.07,.09,.07]))}root.kids.push(orb);
-  root.body=body;
-  return{root,k:2.3,pose(e,t){const r=this.root,dash=e.st==='dash',aim=e.st==='aim',mv=dash?1:e.v;
-    r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*2.4+(i<2?0:Math.PI))*(dash?1.2:.8)*mv);
-    r.body.r[0]=dash?-.25:aim?.3:Math.sin(e.ph*2.4)*.08*mv;r.body.t[1]=aim?.34:.42+Math.abs(Math.sin(e.ph*2.4))*.06*mv}}
-}
-/* --- Caracol de Maré Lunar --- */
-function rigCaracol(){
-  const root=node([0,.02,0]);
-  root.parts.push(P3(mSph(8,5),'#9a78d8',[0,.12,.05],null,[.3,.14,.7]),P3(mSph(7,5),'#c9a8ff',[0,.2,.55],null,[.2,.16,.2]));
-  for(const sd of[-1,1]){const st=node([sd*.08,.3,.62]);st.r=[-.5,0,sd*.25];st.parts.push(P3(mTc(1,.6,5),'#c9a8ff',[0,0,0],null,[.025,.3,.025]),P3(mSph(5,4),'#fff2b0',[0,.32,0],null,[.05,.05,.05],em({gr:.12})));root.kids.push(st)}
-  const shell=node([0,.52,-.12]);shell.parts.push(P3(mSph(9,7),'#d9c8a8',[0,0,0],null,[.4,.42,.42]),P3(mSph(8,6),'#ece4ff',[.05,.05,.22],null,[.3,.3,.22],em({gr:.22})));
-  for(const[a,b]of[[.3,.1],[-.2,.25],[.1,-.25]])shell.parts.push(P3(mBox(),'#a88a50',[a*.6,b,.38],[0,0,a],[.2,.015,.01]));root.kids.push(shell);
-  const orb=node([0,.55,-.12],[],[],{spin:{ax:1,w:1.2}});for(let i=0;i<5;i++){const q=i/5*TAU;orb.parts.push(P3(mBox(),'#8a7aa0',[Math.cos(q)*.62,Math.sin(i)*.12,Math.sin(q)*.62],[q,i,0],[.08,.08,.08]))}root.kids.push(orb);
-  root.shell=shell;
-  return{root,k:1.9,pose(e,t){const w=Math.sin(e.ph*1.5);this.root.shell.t[2]=-.12+w*.03;this.root.s=[1,1,1+w*.04]}}
-}
-/* --- Arraia de Vitral --- */
-function rigArraia(){
-  const root=node([0,.75,0]),body=node();root.kids.push(body);
-  body.parts.push(P3(mSph(8,5),'#3a7fd0',[0,0,0],null,[.32,.07,.42]),P3(mSph(6,5),'#ffe08a',[0,.05,.05],null,[.12,.03,.12],em({gr:.14})));
-  root.wings=[];for(const sd of[-1,1]){const w=node([sd*.2,0,0]);
-    w.parts.push(P3(mSph(7,4),'#6fc8ff',[sd*.42,0,0],null,[.5,.04,.36]),P3(mSph(6,4),'#a8e0ff',[sd*.38,.02,.06],null,[.3,.03,.2]),P3(mBox(),'#d9b04a',[sd*.42,.03,0],[0,sd*.5,0],[.8,.015,.03],em({gr:.04})),P3(mBox(),'#d9b04a',[sd*.42,.03,0],[0,-sd*.5,0],[.7,.015,.03]));
-    body.kids.push(w);root.wings.push(w)}
-  const tail=node([0,0,-.4],[],[],{sway:{w:2,p:0,a:.35}});for(let i=0;i<5;i++)tail.parts.push(P3(mBox(),i%2?'#d9b04a':'#3a7fd0',[0,0,-i*.14],null,[.05-i*.006,.03,.14]));body.kids.push(tail);
-  root.body=body;
-  return{root,k:2.1,pose(e,t){const r=this.root,dv=e.st==='dash',f=Math.sin(t*(dv?14:5)+e.seed)*(dv?.25:.45);r.wings.forEach((w,i)=>w.r[2]=(i?1:-1)*f);r.t[1]=.75+Math.sin(t*2+e.seed)*.08;r.body.r[0]=dv?.3:0}}
-}
-/* --- Cardume de Velas (um peixe) --- */
-function rigCardume(){
-  const root=node([0,.5,0]),body=node();root.kids.push(body);
-  body.parts.push(P3(mSph(7,5),'#e8e2d0',[0,0,0],null,[.16,.17,.36]),P3(mSph(5,4),'#ffe9b0',[0,-.04,.08],null,[.12,.1,.22]));
-  for(const sd of[-1,1])body.parts.push(P3(mSph(4,3),'#ffcf5a',[sd*.1,.04,.24],null,[.04,.04,.03],em({gr:.08})));
-  const tail=node([0,0,-.34],[],[],{sway:{w:9,p:0,a:.6}});tail.parts.push(P3(mQuad(),'#d9d0b8',[0,-.2,0],[Math.PI/2,0,0],[.3,.34,1],{dbl:true}));body.kids.push(tail);
-  body.kids.push(flameNode(0,.18,.08,0,'#ffb347',.12),flameNode(0,.2,.1,.5,'#ffe08a',.08));
-  root.body=body;
-  return{root,k:4,pose(e,t){const r=this.root;r.t[1]=.5+Math.sin(t*4+e.seed)*.08;r.body.r[2]=Math.sin(t*6+e.seed)*.15}}
-}
-/* --- Jardineiro de Órbita (mini chefe) --- */
-function rigJardineiro(){
-  const root=node([0,.05,0]),torso=node([0,1.0,0]);root.kids.push(torso);
-  torso.parts.push(P3(mBox(),'#e6dccb',[0,0,0],null,[.7,.6,.5]),P3(mBox(),'#c9bfae',[0,-.35,0],null,[.55,.2,.42]));
-  for(const[x,y,r]of[[-.15,.1,.5],[.2,-.05,-.6],[0,.2,.1]])torso.parts.push(P3(mBox(),'#d9a940',[x,y,.26],[0,0,r],[.02,.3,.01],em({gr:.05})));
-  const head=node([0,.42,.05]);head.parts.push(P3(mBox(),'#d9cfbe',[0,0,0],null,[.3,.24,.28]),P3(mSph(5,4),'#ffe9a0',[0,0,.15],null,[.06,.06,.03],em({gr:.14})),
-    P3(mCone(10),'#d4c6ad',[0,.16,0],null,[.62,.22,.62]),P3(mCyl(10),'#8a6a3a',[0,.15,0],null,[.62,.02,.62]));
-  for(let i=0;i<6;i++){const q=i/6*TAU;head.parts.push(P3(mSph(5,4),i%2?'#b48cff':'#d8a0ff',[Math.cos(q)*.42,.22,Math.sin(q)*.42],null,[.07,.07,.07],em({gr:.05})))}torso.kids.push(head);
-  root.arms=[];for(const sd of[-1,1]){const ar=node([sd*.45,.15,.05]);ar.parts.push(P3(mBox(),'#e6dccb',[0,-.3,0],null,[.16,.5,.16]),P3(mBox(),'#c9bfae',[0,-.6,.05],null,[.2,.16,.2]));torso.kids.push(ar);root.arms.push(ar)}
-  const bowl=node([0,-.15,.4]);bowl.parts.push(P3(mDome(8),'#8a6a3a',[0,0,0],[Math.PI,0,0],[.22,.12,.22]));for(let i=0;i<5;i++)bowl.parts.push(P3(mSph(4,3),'#ffe08a',[Math.cos(i)*.1,.02,Math.sin(i)*.1],null,[.05,.05,.05],em({gr:.1})));torso.kids.push(bowl);
-  root.legs=[];for(const sd of[-1,1]){const lg=node([sd*.2,.7,0]);lg.parts.push(P3(mBox(),'#d9cfbe',[0,-.32,0],null,[.2,.55,.22]),P3(mBox(),'#8a7a66',[0,-.62,.05],null,[.26,.1,.32]));root.kids.push(lg);root.legs.push(lg)}
-  root.torso=torso;
-  return{root,k:1.75,pose(e,t){const r=this.root,ch=e.st==='charge',sl=e.st==='slam';r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*2+i*Math.PI)*.6*(ch?1:e.v));
-    r.torso.r[0]=ch?.4:sl?-.25:0;r.arms.forEach((a,i)=>a.r[0]=sl?-1.4:e.tele>0?-.8:-.2+Math.sin(e.ph*2+i)*.2*e.v)}}
-}
-/* --- Coroinha de Cracas (mini chefe) --- */
-function rigCoroinha(){
-  const root=node([0,.05,0]),body=node([0,.45,0]);root.kids.push(body);
-  body.parts.push(P3(mSph(8,6),'#4a3a5a',[0,0,0],null,[.42,.3,.38]));
-  for(let i=0;i<9;i++){const q=i*2.4,y=Math.sin(i*1.3)*.15;body.parts.push(P3(mSph(5,4),'#e6dcc8',[Math.cos(q)*.36,y,Math.sin(q)*.3],null,[.08,.08,.08]))}
-  for(const sd of[-1,1])body.parts.push(P3(mSph(4,3),'#ffe08a',[sd*.1,.08,.34],null,[.04,.04,.02],em({gr:.1})));
-  for(let i=0;i<5;i++){const q=(i-2)*.32;body.parts.push(P3(mCone(4),'#d9b04a',[Math.sin(q)*.18,.32,Math.cos(q)*.18-.02],null,[.05,.14,.05],em({gr:.04})))}
-  const bell=node([0,1.55,0],[],[],{sway:{w:1.6,p:0,a:.12}});bell.parts.push(P3(mBell(),'#b08a3a',[0,-.45,0],null,[.46,.6,.46]),P3(mSph(5,4),'#8a6a2a',[0,-.48,0],null,[.12,.12,.12]));
-  for(let i=0;i<6;i++){const q=i/6*TAU;bell.parts.push(P3(mSph(5,4),'#e6dcc8',[Math.cos(q)*.33,-.2,Math.sin(q)*.33],null,[.06,.06,.06]))}
-  for(let i=0;i<4;i++){const q=i/4*TAU+.4;bell.parts.push(P3(mBox(),'#5a7a3a',[Math.cos(q)*.5,-.55,Math.sin(q)*.5],null,[.03,.4,.03]))}root.kids.push(bell);
-  root.arms=[];for(const sd of[-1,1]){const ar=node([sd*.3,.6,0]);ar.r=[0,0,sd*-.3];ar.parts.push(P3(mTc(1,.7,5),'#4a3a5a',[0,0,0],null,[.07,.8,.07]));root.kids.push(ar);root.arms.push(ar)}
-  root.legs=[];for(let i=0;i<6;i++){const sd=i<3?-1:1,z=(i%3-1)*.2;const lg=node([sd*.32,.35,z]);lg.r=[0,0,sd*.9];lg.parts.push(P3(mTc(1,.4,4),'#3a2a48',[0,-.3,0],null,[.04,.32,.04]));root.kids.push(lg);root.legs.push(lg)}
-  root.bell=bell;root.body=body;
-  return{root,k:1.7,pose(e,t){const r=this.root,sl=e.st==='slam'||e.tele>0;r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*3+i)*.4*e.v);r.bell.t[1]=1.55+(sl?.15:0);r.body.t[1]=.45+Math.abs(Math.sin(e.ph*3))*.04*e.v}}
-}
 /* --- Mariposa do Eclipse (chefe) --- */
 function mPoly(key,pts,z=0){return MESH[key]||finish(key,pts.map(([x,y])=>[x,y,z]),[pts.map((_,i)=>i)],false,true)}
+/* --- Lebre Orbital (ficha: lebre branca, orelhas longas com crescentes dourados) --- */
+function rigLebre(){
+  const W='#f3eef8',W2='#e2d9ee',G='#e0b24a';
+  const root=node([0,.05,0]),body=node([0,.62,0]);root.kids.push(body);
+  body.parts.push(P3(mSph(8,6),W,[0,0,-.04],null,[.22,.21,.42]),P3(mSph(7,5,.2),'#ffffff',[0,.02,.3],null,[.17,.19,.14]),P3(mSph(6,5),W2,[0,-.06,-.32],null,[.18,.18,.16]));
+  for(const sd of[-1,1])body.parts.push(P3(mPoly('lcr',MOTH.cres(8,.12,.09,.05)),G,[sd*.225,0,-.2],[0,sd*Math.PI/2,0],null,em({gr:.06})));
+  const head=node([0,.18,.42]);head.parts.push(P3(mSph(7,6),W,[0,0,0],null,[.13,.13,.15]),P3(mSph(5,4),W2,[0,-.04,.12],null,[.06,.05,.05]));
+  for(const sd of[-1,1]){head.parts.push(P3(mSph(5,4),'#a77ae8',[sd*.07,.03,.1],null,[.03,.03,.02],em({gr:.1})));
+    const ear=node([sd*.05,.1,-.04]);ear.r=[-.25,0,sd*.18];
+    ear.parts.push(P3(mSph(6,5),W,[0,.34,0],null,[.06,.36,.025]),P3(mSph(5,4),'#ecdcf2',[0,.32,.015],null,[.035,.28,.01]),P3(mPoly('lear',MOTH.cres(10,.38,.32,.06).map(([x,y])=>[-y*.35,x])),G,[sd*-.02,.32,.03],null,null,em({gr:.08})));
+    head.kids.push(ear)}
+  body.kids.push(head);
+  root.legs=[];for(const[x,z]of[[-.12,.26],[.12,.26],[-.14,-.28],[.14,-.28]]){const lg=node([x,.5,z]);lg.parts.push(P3(mTc(1,.55,5),W,[0,-.46,0],null,[.055,.46,.055]),P3(mBox(),W2,[0,-.47,.03],null,[.07,.03,.12]));root.kids.push(lg);root.legs.push(lg)}
+  body.parts.push(P3(mSph(6,5,.25),'#ffffff',[0,.06,-.46],null,[.09,.09,.08]));
+  root.body=body;
+  return{root,k:2.3,pose(e,t){const r=this.root,dash=e.st==='dash',aim=e.st==='aim',mv=dash?1:e.v;
+    r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*2.4+(i<2?0:Math.PI))*(dash?1.2:.7)*mv);
+    r.body.r[0]=dash?-.2:aim?.25:Math.sin(e.ph*2.4)*.06*mv;r.body.t[1]=aim?.54:.62+Math.abs(Math.sin(e.ph*2.4))*.05*mv}}
+}
+/* --- Caracol de Maré Lunar (ficha: caracol lilás, concha em espiral com lua dentro e anéis dourados) --- */
+function rigCaracol(){
+  const L='#cdb6ec',L2='#b79ade',G='#d9b04a';
+  const root=node([0,.02,0]);
+  root.parts.push(P3(mSph(8,5),L,[0,.1,.08],null,[.3,.12,.72]),P3(mSph(7,5),'#e2d2f6',[0,.12,.62],null,[.14,.1,.16]));
+  const neck=node([0,.12,.6]);neck.parts.push(P3(mSph(7,5),L,[0,.22,.02],null,[.13,.24,.12]));
+  for(const sd of[-1,1]){const st=node([sd*.07,.42,.04]);st.r=[-.25,0,sd*.3];st.parts.push(P3(mTc(1,.5,5),L,[0,0,0],null,[.025,.32,.025]),P3(mSph(5,4),G,[0,.34,0],null,[.045,.045,.045],em({gr:.08})));neck.kids.push(st)}
+  root.kids.push(neck);
+  const shell=node([0,.58,-.14]);
+  shell.parts.push(P3(mSph(10,8),L2,[0,0,0],null,[.32,.5,.5]));
+  for(const[r,c]of[[.42,'#a888d4'],[.3,'#c4a8ee'],[.18,'#9a78c8']])for(const sd of[-1,1])shell.parts.push(P3(mCyl(14),c,[sd*(.3-r*.05),0,0],[0,0,Math.PI/2],[r,.02,r]));
+  shell.parts.push(P3(mSph(8,6),'#fff3c8',[0,-.04,.22],null,[.2,.2,.2],em({gr:.35})),P3(mSph(6,4),'#e6d39a',[.05,0,.38],null,[.05,.05,.02]));
+  root.kids.push(shell);
+  const rings=[];for(const[tilt,w]of[[.5,.7],[-.6,-.5]]){const rg=node([0,.58,-.14],[],[],{spin:{ax:1,w}});rg.r=[tilt,0,tilt*.4];
+    for(let i=0;i<22;i++){const q=i/22*TAU;rg.parts.push(P3(mBox(),G,[Math.cos(q)*.66,0,Math.sin(q)*.66],[0,-q,0],[.025,.025,.2],em({gr:.03})))}
+    for(let i=0;i<3;i++){const q=i/3*TAU+.4;rg.parts.push(P3(mSph(5,4),G,[Math.cos(q)*.66,0,Math.sin(q)*.66],null,[.05,.05,.05],em({gr:.08})))}
+    root.kids.push(rg);rings.push(rg)}
+  root.shell=shell;root.neck=neck;
+  return{root,k:1.9,pose(e,t){const w=Math.sin(e.ph*1.5);this.root.shell.t[2]=-.14+w*.03;this.root.neck.r[0]=-.1+w*.05;this.root.s=[1,1,1+w*.04]}}
+}
+/* --- Arraia de Vitral (ficha: arraia-manta de vitral azul com veios dourados e cauda de cristal) --- */
+const RAY={half:[[0,.4],[.12,.66],[.2,.38],[.55,.18],[1.15,-.02],[.6,-.26],[.28,-.36],[0,-.4]]};
+function rigArraia(){
+  const B='#8ec2f2',B2='#5a90d8',G='#e0b24a';
+  const root=node([0,.8,0]),body=node();root.kids.push(body);
+  body.parts.push(P3(mSph(8,5),B2,[0,0,0],null,[.2,.06,.4]),P3(mSph(6,4),'#cfe6ff',[0,.04,.08],null,[.08,.03,.12],em({gr:.12})));
+  root.wings=[];for(const sd of[-1,1]){const w=node([0,0,0]);const M=sd<0?'L':'R',pts=RAY.half.map(([x,z])=>[x*sd,z]);
+    w.parts.push(P3(mPoly('rw'+M,pts),B,[0,0,0],[-Math.PI/2,0,0],null,em({gr:.12})),
+      P3(mPoly('rw2'+M,pts.map(([x,z])=>[x*.62,z*.62])),'#b8dcff',[sd*.12,.01,0],[-Math.PI/2,0,0],null,em({gr:.08})));
+    for(const[a,l]of[[.05,1.1],[-.25,.72],[.35,.6],[-.5,.45]])w.parts.push(P3(mBox(),G,[sd*Math.cos(a)*l/2,.015,Math.sin(a)*l/2],[0,-sd*a,0],[l,.012,.018],em({gr:.04})));
+    body.kids.push(w);root.wings.push(w)}
+  for(const sd of[-1,1]){const fin=node([sd*.1,0,-.3],[],[],{sway:{w:2.4,p:sd,a:.3}});fin.parts.push(P3(mQuad(),'#d6ecff',[0,-.5,0],[0,0,0],[.08,.5,1],{dbl:true}));fin.r=[-1.2,0,sd*.2];body.kids.push(fin)}
+  const tail=node([0,0,-.38],[],[],{sway:{w:2,p:0,a:.3}});for(let i=0;i<7;i++)tail.parts.push(P3(mBox(),G,[0,0,-i*.16],null,[.018,.018,.16]));
+  tail.parts.push(P3(mOct(4),'#a8dcff',[0,0,-1.18],[Math.PI/2,0,0],[.06,.12,.04],em({gr:.14})));body.kids.push(tail);
+  root.body=body;
+  return{root,k:2.1,pose(e,t){const r=this.root,dv=e.st==='dash',f=Math.sin(t*(dv?12:4.5)+e.seed)*(dv?.22:.4);r.wings.forEach((w,i)=>w.r[2]=(i?1:-1)*f);r.t[1]=.8+Math.sin(t*2+e.seed)*.08;r.body.r[0]=dv?.25:0}}
+}
+/* --- Cardume de Velas (ficha: peixe translúcido de barbatanas longas com chama na cabeça) --- */
+function rigCardume(){
+  const root=node([0,.5,0]),body=node();root.kids.push(body);
+  body.parts.push(P3(mSph(7,5),'#f2eee4',[0,0,0],null,[.13,.16,.3]),P3(mSph(5,4),'#ffe9b0',[0,-.03,.12],null,[.09,.08,.14],em({gr:.06})));
+  for(const sd of[-1,1]){body.parts.push(P3(mSph(4,3),'#e0a030',[sd*.09,.05,.2],null,[.035,.035,.025],em({gr:.08})));
+    const pf=node([sd*.12,0,.05],[],[],{sway:{w:4,p:sd,a:.35}});pf.r=[0,0,sd*1.2];pf.parts.push(P3(mQuad(),'#dfe8f2',[0,0,0],[Math.PI/2,0,0],[.18,.38,1],{dbl:true}));body.kids.push(pf)}
+  const tail=node([0,0,-.28],[],[],{sway:{w:7,p:0,a:.5}});for(const[a,l]of[[0,.55],[.35,.42],[-.35,.42]])tail.parts.push(P3(mQuad(),'#e8eef6',[0,0,0],[Math.PI/2,a,0],[.16,l,1],{dbl:true}));body.kids.push(tail);
+  body.kids.push(flameNode(0,.2,.08,0,'#ffb347',.13),flameNode(0,.22,.1,.5,'#ffe08a',.09));
+  root.body=body;
+  return{root,k:3.6,pose(e,t){const r=this.root;r.t[1]=.5+Math.sin(t*4+e.seed)*.08;r.body.r[2]=Math.sin(t*6+e.seed)*.12}}
+}
+/* --- Jardineiro de Órbita (ficha: robô branco de chapéu cônico, avental lilás e cesto com galhos) --- */
+function rigJardineiro(){
+  const W='#ece6da',D='#3a3442',P='#6a4a9a',G='#d9b04a';
+  const root=node([0,.05,0]),torso=node([0,1.02,0]);root.kids.push(torso);
+  torso.parts.push(P3(mBox(),W,[0,0,0],null,[.46,.42,.3]),P3(mBox(),W,[0,-.3,0],null,[.36,.2,.26]),P3(mPoly('jcr',MOTH.cres(8,.09,.07,.035)),G,[0,.05,.155],null,null,em({gr:.06})));
+  for(const sd of[-1,1])torso.parts.push(P3(mBox(),'#7a5a3a',[sd*.13,0,.152],[0,0,sd*.25],[.04,.46,.01]));
+  torso.parts.push(P3(mBox(),P,[0,-.52,.12],null,[.26,.42,.03]),P3(mPoly('jcr2',MOTH.cres(8,.06,.045,.022)),G,[0,-.5,.14],null,null,em({gr:.05})),P3(mBox(),'#7a5a3a',[0,-.3,0],null,[.4,.05,.31]));
+  const pack=node([0,.02,-.25]);pack.parts.push(P3(mCyl(8),'#9a7a4a',[0,-.15,0],null,[.18,.34,.14]),P3(mCyl(8),'#7a5a3a',[0,.18,0],null,[.185,.03,.145]));
+  for(const[x,a]of[[-.08,.5],[.06,-.4],[0,.1],[.1,.8],[-.12,-.7]]){const br=node([x,.18,0]);br.r=[-.2,0,a];br.parts.push(P3(mTc(1,.3,4),'#6a4a3a',[0,0,0],null,[.015,.42,.015]));
+    for(let k=0;k<3;k++)br.parts.push(P3(mSph(4,3),k%2?'#b48cff':'#8a64c8',[k%2?.05:-.05,.18+k*.1,0],[0,0,k%2?.6:-.6],[.05,.025,.035]));pack.kids.push(br)}
+  torso.kids.push(pack);
+  const head=node([0,.36,.02]);head.parts.push(P3(mBox(),D,[0,0,0],null,[.18,.2,.18]),P3(mBox(),'#ffe9a0',[-.045,.02,.092],null,[.03,.06,.01],em({gr:.1})),P3(mBox(),'#ffe9a0',[.045,.02,.092],null,[.03,.06,.01],em({gr:.1})),
+    P3(mCone(14),'#efe6d0',[0,.1,0],null,[.62,.24,.62]),P3(mCyl(14),'#c9bc9e',[0,.09,0],null,[.62,.015,.62]),P3(mPoly('jcr3',MOTH.cres(8,.07,.055,.028)),G,[0,.2,.36],[-.35,0,0],null,em({gr:.05})));
+  torso.kids.push(head);
+  root.arms=[];for(const sd of[-1,1]){const ar=node([sd*.3,.14,0]);ar.parts.push(P3(mSph(5,4),D,[0,0,0],null,[.07,.07,.07]),P3(mBox(),W,[0,-.2,0],null,[.1,.28,.1]),P3(mSph(5,4),D,[0,-.36,0],null,[.055,.055,.055]),P3(mBox(),W,[0,-.52,.02],null,[.09,.26,.09]),P3(mBox(),D,[0,-.7,.03],null,[.08,.08,.06]));torso.kids.push(ar);root.arms.push(ar)}
+  root.legs=[];for(const sd of[-1,1]){const lg=node([sd*.13,.6,0]);lg.parts.push(P3(mBox(),W,[0,-.14,0],null,[.13,.26,.14]),P3(mSph(5,4),D,[0,-.3,.02],null,[.07,.07,.07]),P3(mBox(),W,[0,-.44,0],null,[.12,.26,.13]),P3(mBox(),'#d9d2c4',[0,-.58,.04],null,[.15,.08,.22]));root.kids.push(lg);root.legs.push(lg)}
+  root.torso=torso;
+  return{root,k:1.75,pose(e,t){const r=this.root,ch=e.st==='charge',sl=e.st==='slam'||e.st==='spin';r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*2+i*Math.PI)*.6*(ch?1:e.v));
+    r.torso.r[0]=ch?.3:sl?-.15:0;r.torso.r[1]=e.st==='spin'?t*6:0;r.arms.forEach((a,i)=>{a.r[0]=sl?-1.5:e.tele>0?-.9:-.15+Math.sin(e.ph*2+i)*.25*e.v;a.r[2]=(i?1:-1)*(sl?.3:.08)})}}
+}
+/* --- Coroinha de Cracas (ficha: sino de bronze esverdeado sobre um corpo de cracas, cordas e algas) --- */
+function rigCoroinha(){
+  const BR='#8a9a86',C='#e8e0cc',D='#5a5a4a',S='#6f8a4a';
+  const root=node([0,.05,0]),body=node([0,.42,0]);root.kids.push(body);
+  body.parts.push(P3(mSph(8,6),D,[0,0,0],null,[.3,.32,.26]),P3(mBox(),'#7a5a3a',[0,.12,0],null,[.6,.06,.5]));
+  for(let i=0;i<16;i++){const q=i*2.39,y=-.2+(i%5)*.1,rr=.28;body.parts.push(P3(mTc(1,.6,6),C,[Math.cos(q)*rr,y,Math.sin(q)*rr*.9],[Math.sin(q)*.5,0,-Math.cos(q)*.5],[.06,.08,.06]),P3(mCyl(6),'#2a2620',[Math.cos(q)*(rr+.04),y+.06,Math.sin(q)*(rr+.04)*.9],null,[.025,.01,.025]))}
+  for(let i=0;i<6;i++){const q=i/6*TAU+.3;body.parts.push(P3(mBox(),S,[Math.cos(q)*.27,-.18,Math.sin(q)*.24],[0,-q,0],[.03,.38,.015]))}
+  root.arms=[];for(const sd of[-1,1]){const ar=node([sd*.3,.5,0]);ar.parts.push(P3(mSph(6,5),C,[0,-.08,0],null,[.12,.14,.12]),P3(mTc(1,.6,5),D,[0,-.32,0],null,[.06,.2,.06]));
+    for(const s2 of[-1,1])ar.parts.push(P3(mCone(4),'#7a7464',[s2*.04,-.38,.04],[Math.PI,0,s2*.3],[.025,.1,.025]));root.kids.push(ar);root.arms.push(ar)}
+  root.legs=[];for(const sd of[-1,1]){const lg=node([sd*.14,.18,0]);lg.parts.push(P3(mTc(1,.7,5),D,[0,-.12,0],null,[.07,.16,.07]),P3(mBox(),'#4a4a3a',[0,-.15,.05],null,[.14,.05,.18]));root.kids.push(lg);root.legs.push(lg)}
+  const bell=node([0,1.22,-.08],[],[],{sway:{w:1.5,p:0,a:.1}});bell.r=[-.38,0,0];
+  bell.parts.push(P3(mBell(),BR,[0,-.42,0],null,[.46,.6,.46]),P3(mCyl(16),'#b8a050',[0,-.3,0],null,[.41,.04,.41],em({gr:.03})),P3(mCyl(16),'#6a7a66',[0,-.4,0],null,[.46,.03,.46]),
+    P3(mBox(),'#c9b070',[0,0,.37],null,[.08,.14,.02],em({gr:.03})),P3(mSph(6,5),'#5a4a2a',[0,.36,0],null,[.07,.07,.07]));
+  for(let i=0;i<10;i++){const q=i/10*TAU;bell.parts.push(P3(mBox(),'#6a6a5a',[Math.cos(q)*.06,.4+Math.sin(q)*.06,0],[0,0,q],[.03,.04,.03]))}
+  for(const sd of[-1,1])bell.parts.push(P3(mBox(),'#b8a070',[sd*.36,-.3,.12],[0,0,sd*.3],[.025,.7,.025]));
+  for(let i=0;i<5;i++){const q=i/5*TAU+.6;bell.parts.push(P3(mBox(),S,[Math.cos(q)*.5,-.5,Math.sin(q)*.5],[0,-q,0],[.025,.36,.012]))}
+  root.kids.push(bell);root.bell=bell;root.body=body;
+  return{root,k:1.7,pose(e,t){const r=this.root,sl=e.st==='slam'||e.tele>0;r.legs.forEach((l,i)=>l.r[0]=Math.sin(e.ph*3+i*Math.PI)*.5*e.v);r.bell.t[1]=1.22+(sl?.12:0);r.body.t[1]=.42+Math.abs(Math.sin(e.ph*3))*.04*e.v;r.arms.forEach((a,i)=>a.r[0]=sl?-1.2:Math.sin(e.ph*3+i)*.3*e.v)}}
+}
+/* --- Mariposa do Eclipse (ficha: corpo roxo peludo, asas de cima feitas de lua rachada com borda dourada) --- */
 const MOTH={
-  up:[[0,0],[.3,.32],[.72,.72],[1.18,.98],[1.5,.92],[1.56,.66],[1.38,.36],[1.02,.1],[.55,-.06]],
-  lo:[[0,0],[.5,-.08],[.92,-.3],[1.02,-.6],[.82,-.86],[.62,-1.22],[.44,-.88],[.16,-.4]],
-  cres:(n,R,r,dx)=>{const o=[];for(let i=0;i<=n;i++){const a=Math.PI*.35+i/n*Math.PI*1.3;o.push([Math.cos(a)*R,Math.sin(a)*R])}for(let i=n;i>=0;i--){const a=Math.PI*.35+i/n*Math.PI*1.3;o.push([dx+Math.cos(a)*r,Math.sin(a)*r])}return o}
+  cres:(n,R,r,dx)=>{const o=[];for(let i=0;i<=n;i++){const a=Math.PI*.35+i/n*Math.PI*1.3;o.push([Math.cos(a)*R,Math.sin(a)*R])}for(let i=n;i>=0;i--){const a=Math.PI*.35+i/n*Math.PI*1.3;o.push([dx+Math.cos(a)*r,Math.sin(a)*r])}return o},
+  fan:(R,a0,a1,n=14)=>{const o=[[0,0]];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;o.push([Math.cos(a)*R,Math.sin(a)*R])}return o},
+  lo:[[0,0],[.35,-.06],[.62,-.32],[.6,-.7],[.42,-1.28],[.26,-.78],[.1,-.36]]
 };
 function rigMariposa(){
+  const PU='#6a4aa8',PU2='#8a6ac8',CR='#efe6dc',G='#d9b04a';
   const root=node([0,1.2,0]);
-  const sc=(P,k,ox=0,oy=0,mx=1)=>P.map(([x,y])=>[(x*k+ox)*mx,y*k+oy]);
-  // lua crescente atrás
-  const moon=node([0,.55,-.45]);moon.parts.push(P3(mPoly('mcres',MOTH.cres(14,1.25,1.02,.42)),'#f3e7c8',[0,0,0],null,null,em({gr:.4})));
-  for(const[x,y,r]of[[-.95,.3,.12],[-1.05,-.2,.09],[-.7,.75,.08],[-.75,-.65,.1]])moon.parts.push(P3(mSph(6,4),'#d8caa6',[x,y,.04],null,[r,r,.02]));
-  root.kids.push(moon);
-  const wg=node([0,.2,0]);wg.r=[-.45,0,0];root.kids.push(wg);
-  root.wings=[];
-  for(const sd of[-1,1]){const w=node([sd*.08,0,0]);const M=sd<0?'L':'R';
-    w.parts.push(
-      P3(mPoly('mu'+M,sc(MOTH.up,1,0,0,sd)),'#3b1f63',[0,0,0]),
-      P3(mPoly('mu2'+M,sc(MOTH.up,.68,.18,.1,sd)),'#7a55c0',[0,0,.05]),
-      P3(mPoly('mu3'+M,sc(MOTH.up,.34,.5,.28,sd)),'#c9b0ff',[0,0,.09],null,null,em({gr:.05})),
-      P3(mPoly('ml'+M,sc(MOTH.lo,1,0,0,sd)),'#4a2a78',[0,0,-.01]),
-      P3(mPoly('ml2'+M,sc(MOTH.lo,.6,.14,-.12,sd)),'#9a7ad8',[0,0,.05]));
-    // crescentes dourados nas asas
-    w.parts.push(P3(mPoly('mc1'+M,MOTH.cres(8,.16,.12,.06).map(([x,y])=>[x*sd,y])),'#ffd98a',[sd*1.08,.66,.05],null,null,em({gr:.14})),
-      P3(mPoly('mc2'+M,MOTH.cres(8,.11,.08,.04).map(([x,y])=>[x*sd,y])),'#ffd98a',[sd*.62,-.6,.04],null,null,em({gr:.1})));
-    w.s=[1.25,1.25,1.25];
+  const wg=node([0,.25,0]);wg.r=[-.42,0,0];root.kids.push(wg);root.wings=[];
+  for(const sd of[-1,1]){const w=node([sd*.1,0,0]);const M=sd<0?'L':'R',mir=P=>P.map(([x,y])=>[x*sd,y]);
+    w.parts.push(P3(mPoly('mfa'+M,mir(MOTH.fan(1.34,-.15,1.59))),CR,[0,0,0],null,null,em({gr:.18})));
+    for(let i=0;i<=12;i++){const a=-.15+i/12*1.74;w.parts.push(P3(mBox(),G,[sd*Math.cos(a)*1.36,Math.sin(a)*1.36,.02],[0,0,sd>0?a+Math.PI/2:Math.PI/2-a],[.2,.05,.02],em({gr:.06})))}
+    for(const[x,y,r]of[[.45,.8,.17],[.85,.42,.2],[.3,.35,.11],[.78,.82,.13],[.62,.15,.09]])w.parts.push(P3(mPoly('mbl'+r,MOTH.fan(r,0,TAU,10).slice(1)),'#b9a2dc',[sd*x,y,.01]));
+    for(const[a,l]of[[.35,1.3],[.9,1.25],[1.3,.9],[.6,.7]])w.parts.push(P3(mBox(),'#7a6a8a',[sd*Math.cos(a)*l/2,Math.sin(a)*l/2,.02],[0,0,sd>0?a:Math.PI-a],[l,.016,.01]));
+    w.parts.push(P3(mPoly('mlo'+M,mir(MOTH.lo)),PU,[0,0,.015]),P3(mPoly('mlo2'+M,mir(MOTH.lo.map(([x,y])=>[x*.6+.08,y*.7-.05]))),PU2,[0,0,.025]),
+      P3(mPoly('mlc'+M,MOTH.cres(8,.12,.09,.045).map(([x,y])=>[x*sd,y])),G,[sd*.4,-.5,.04],null,null,em({gr:.12})),P3(mPoly('muc'+M,MOTH.cres(8,.16,.12,.06).map(([x,y])=>[x*sd,y])),G,[sd*.75,.7,.03],null,null,em({gr:.12})));
     wg.kids.push(w);root.wings.push(w)}
-  // corpo peludo
-  root.parts.push(P3(mSph(8,6,.15),'#ece2ff',[0,.32,.06],null,[.2,.24,.18]),P3(mSph(7,5,.1),'#d9c8f5',[0,.2,.12],null,[.24,.1,.12]));
-  for(let i=0;i<5;i++)root.parts.push(P3(mSph(7,5),i%2?'#5a3a8a':'#e6d8ff',[0,.02-i*.13,.04],null,[.15-i*.018,.08,.13-i*.015]));
-  const head=node([0,.6,.12]);head.parts.push(P3(mSph(7,5),'#f3ecff',[0,0,0],null,[.13,.12,.12]));
-  for(const sd of[-1,1]){head.parts.push(P3(mSph(5,4),'#ffe9b0',[sd*.065,.01,.09],null,[.045,.05,.03],em({gr:.16})));
-    const an=node([sd*.05,.1,0]);an.r=[-.2,0,sd*.6];an.parts.push(P3(mTc(1,.3,4),'#e8d6a8',[0,0,0],null,[.015,.42,.015]));for(let k=1;k<5;k++)an.parts.push(P3(mBox(),'#e8d6a8',[sd*.03,k*.08,0],[0,0,sd*.8],[.07,.01,.01]));head.kids.push(an)}
-  head.parts.push(P3(mPoly('mhorn',MOTH.cres(10,.24,.19,.08).map(([x,y])=>[y,-x])),'#ffd98a',[0,.2,-.02],null,null,em({gr:.18})));
-  root.kids.push(head);root.head=head;root.wg=wg;
-  return{root,k:1.55,pose(e,t){const r=this.root,f=.35+Math.sin(t*3.4)*.32+(e.tele>0?.25:0);r.wings.forEach((w,i)=>{const sd=i?1:-1;w.r[1]=-sd*f;w.r[2]=sd*Math.sin(t*3.4)*.06});r.t[1]=1.2+Math.sin(t*1.6)*.1;r.head.r[1]=Math.sin(t*.7)*.2}}
+  root.parts.push(P3(mSph(8,6,.25),PU,[0,.32,.06],null,[.2,.24,.18]),P3(mSph(7,5,.2),'#8a6ac8',[0,.36,.14],null,[.16,.12,.1]));
+  for(let i=0;i<6;i++)root.parts.push(P3(mSph(7,5),i%2?'#5a3a90':'#7a5ab8',[0,.06-i*.13,.04],null,[.15-i*.017,.08,.13-i*.016]));
+  const head=node([0,.6,.12]);head.parts.push(P3(mSph(7,5,.2),PU,[0,0,0],null,[.14,.13,.13]));
+  for(const sd of[-1,1]){head.parts.push(P3(mSph(5,4),'#ffe08a',[sd*.07,.01,.09],null,[.045,.05,.03],em({gr:.18})));
+    const an=node([sd*.05,.1,0]);an.r=[-.15,0,sd*.55];an.parts.push(P3(mTc(1,.3,4),'#e8d6c0',[0,0,0],null,[.015,.48,.015]));for(let k=1;k<7;k++)for(const s2 of[-1,1])an.parts.push(P3(mBox(),'#e8d6c0',[s2*.035,k*.065,0],[0,0,s2*.9],[.07,.008,.008]));head.kids.push(an)}
+  root.kids.push(head);root.head=head;
+  return{root,k:1.5,pose(e,t){const r=this.root,f=.3+Math.sin(t*3.2)*.28+(e.tele>0?.25:0);r.wings.forEach((w,i)=>{const sd=i?1:-1;w.r[1]=-sd*f});r.t[1]=1.2+Math.sin(t*1.6)*.1;r.head.r[1]=Math.sin(t*.7)*.2}}
 }
-/* --- Viúva da Âncora (chefe) --- */
+/* --- Viúva da Âncora (ficha: estátua de véu sem rosto, coroa de algas, corrente na mão e âncora no chão) --- */
 function rigViuva(){
+  const ST='#ddd8c8',ST2='#cbc5b2',SW='#7a8a4a',R='#6a5440';
   const root=node([0,.05,0]);
-  const robe=node([0,0,0],[P3(mCone(10),'#5a6a5a',[0,0,0],null,[.62,1.9,.52]),P3(mCone(8),'#6f7f5a',[0,.1,.05],null,[.5,1.6,.42])],[],{sway:{w:1.1,p:0,a:.03}});
-  for(let i=0;i<8;i++){const q=i/8*TAU;robe.parts.push(P3(mBox(),'#4a6a3a',[Math.cos(q)*.5,.1,Math.sin(q)*.42],[0,-q,0],[.06,.5,.02]))}root.kids.push(robe);
-  const head=node([0,1.78,.02]);head.parts.push(P3(mSph(7,6),'#d8d4c8',[0,0,0],null,[.16,.2,.16]),P3(mCone(8),'#6f7f5a',[0,-.05,-.02],null,[.26,.42,.24]));
-  for(const sd of[-1,1])head.parts.push(P3(mBox(),'#7fd8c0',[sd*.06,.02,.15],null,[.05,.012,.01],em({gr:.06})));root.kids.push(head);
-  const halo=node([0,1.95,-.18],[],[],{spin:{ax:2,w:.2}});for(let i=0;i<12;i++){const q=i/12*TAU;halo.parts.push(P3(mCone(4),'#d9c27a',[Math.cos(q)*.42,Math.sin(q)*.42,0],[0,0,q-Math.PI/2],[.04,i%2?.14:.24,.03],em({gr:.08})))}root.kids.push(halo);
-  const arm=node([.3,1.45,.05]);arm.r=[0,0,-1.1];arm.parts.push(P3(mTc(1,.7,6),'#d8d4c8',[0,-.4,0],null,[.06,.45,.06]),P3(mBox(),'#5a6a5a',[0,-.15,0],null,[.14,.32,.14]));root.kids.push(arm);
-  const anc=node([-.7,.1,.25]);anc.r=[0,0,.12];anc.s=[1.25,1.25,1.25];
-  anc.parts.push(P3(mBox(),'#6a5a4a',[0,.6,0],null,[.12,1.2,.1]),P3(mBox(),'#6a5a4a',[0,1.05,0],null,[.6,.1,.1]),P3(mSph(6,5),'#6a5a4a',[0,1.25,0],null,[.12,.12,.06]),
-    P3(mBox(),'#6a5a4a',[-.22,.02,0],[0,0,.7],[.5,.12,.1]),P3(mBox(),'#6a5a4a',[.22,.02,0],[0,0,-.7],[.5,.12,.1]),P3(mCone(4),'#7a6a58',[-.42,.2,0],[0,0,.3],[.08,.22,.06]),P3(mCone(4),'#7a6a58',[.42,.2,0],[0,0,-.3],[.08,.22,.06]));
-  for(let i=0;i<5;i++)anc.parts.push(P3(mSph(5,4),'#e6dcc8',[Math.sin(i)*.05,.3+i*.18,.06],null,[.05,.05,.05]));root.kids.push(anc);
-  for(let i=0;i<7;i++)root.parts.push(P3(mBox(),'#4a4038',[-.4+i*.1,1.25-i*.15,.2+Math.sin(i)*.05],[0,0,i*.6],[.07,.12,.04]));
+  const robe=node([0,0,0],[P3(mTc(1,.42,12),ST,[0,0,0],null,[.62,1.3,.55]),P3(mTc(1,.6,10),ST2,[0,0,0],null,[.66,.25,.6])],[],{sway:{w:1,p:0,a:.03}});
+  for(let i=0;i<12;i++){const q=i/12*TAU,l=.4+((i*7)%5)*.12;robe.parts.push(P3(mBox(),i%3?SW:'#5a6a3a',[Math.cos(q)*.5,.9-l/2,Math.sin(q)*.44],[0,-q,0],[.04,l,.015]))}root.kids.push(robe);
+  root.parts.push(P3(mTc(1,.7,10),ST,[0,1.3,0],null,[.24,.36,.2]),P3(mSph(7,5),ST2,[0,1.42,.08],null,[.17,.12,.1]));
+  const head=node([0,1.8,.02]);head.parts.push(P3(mSph(7,6),ST,[0,0,0],null,[.13,.16,.13]),P3(mCone(10),'#e8e4d8',[0,-.95,-.04],null,[.34,1.15,.3]),P3(mSph(8,6,.1),'#e8e4d8',[0,.02,0],null,[.15,.18,.15]));
+  for(let i=0;i<10;i++){const q=i/10*TAU;head.parts.push(P3(mSph(4,3),i%2?SW:'#9aaa5a',[Math.cos(q)*.14,.12,Math.sin(q)*.14],null,[.04,.035,.04]))}
+  for(let i=0;i<6;i++){const q=i/6*TAU+.3;head.parts.push(P3(mBox(),SW,[Math.cos(q)*.15,-.25,Math.sin(q)*.14],[0,-q,0],[.025,.5,.012]))}
+  root.kids.push(head);
+  const arm=node([.22,1.48,.08]);arm.r=[-.5,0,-.25];arm.parts.push(P3(mTc(1,.7,6),ST,[0,-.35,0],null,[.055,.38,.055]),P3(mSph(5,4),ST2,[0,-.4,0],null,[.06,.06,.06]));root.kids.push(arm);
+  const anc=node([.95,.02,.25]);anc.r=[0,-.5,1.15];
+  anc.parts.push(P3(mBox(),R,[0,.55,0],null,[.12,1.1,.1]),P3(mBox(),R,[0,.98,0],null,[.55,.1,.1]),P3(mSph(6,5),R,[0,1.16,0],null,[.1,.1,.06]),
+    P3(mBox(),R,[-.22,.04,0],[0,0,.7],[.5,.12,.1]),P3(mBox(),R,[.22,.04,0],[0,0,-.7],[.5,.12,.1]),P3(mCone(4),'#7a6450',[-.42,.22,0],[0,0,.3],[.08,.22,.06]),P3(mCone(4),'#7a6450',[.42,.22,0],[0,0,-.3],[.08,.22,.06]));
+  for(let i=0;i<6;i++)anc.parts.push(P3(mTc(1,.6,5),'#e8e0cc',[Math.sin(i*2)*.08,.2+i*.12,.07],null,[.04,.06,.04]));root.kids.push(anc);
+  for(let i=0;i<9;i++){const k=i/8,x=.32+k*.62,y=1.08-k*.95+Math.sin(k*Math.PI)*-.15;root.parts.push(P3(mBox(),'#4a3e34',[x,y,.15+k*.1],[0,0,i%2?.9:-.9],[.08,.13,.04]))}
   root.anc=anc;root.arm=arm;root.head=head;
-  return{root,k:1.7,pose(e,t){const r=this.root;r.arm.r[2]=-1.1+Math.sin(t*1.2)*.12-(e.tele>0?.5:0);r.anc.r[2]=.12+Math.sin(t*1.4)*.05;r.head.r[1]=Math.sin(t*.6)*.2}}
+  return{root,k:1.6,pose(e,t){const r=this.root;r.arm.r[0]=-.5+Math.sin(t*1.2)*.08-(e.tele>0?.4:0);r.head.r[1]=Math.sin(t*.6)*.15}}
 }
 /* 2D: desenho simples para os novos (modo leve) */
 function drawGeneric2D(c,e,t){const r=e.r,col=e.col||'#ccc';glowDot(c,0,0,r*1.6,col,.35);c.fillStyle=col;c.beginPath();c.ellipse(0,0,r,r*.85,0,0,TAU);c.fill();c.strokeStyle='#0008';c.lineWidth=2;c.stroke();

@@ -342,6 +342,24 @@ button,a,.btn,.mini,canvas{touch-action:manipulation}
 .intro{position:fixed;inset:0;z-index:200;background:#04040e;color:var(--fg);overflow:hidden;transition:opacity .45s;touch-action:manipulation}
 .intro.out{opacity:0;pointer-events:none}
 body.intro-on{overflow:hidden}
+.cine{position:absolute;inset:0;z-index:8;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cine-bar{position:absolute;left:0;right:0;height:0;background:#000;transition:height .45s ease}
+.cine-bar.t{top:0}.cine-bar.b{bottom:0}
+.cine.on .cine-bar{height:min(11%,70px)}
+.cine-title{position:absolute;left:0;right:0;top:calc(min(11%,70px) + 14px + var(--sit,0px));text-align:center;pointer-events:none;opacity:0;transform:translateY(-8px);transition:opacity .4s,transform .4s}
+.cine-title.on{opacity:1;transform:none}
+.cine-title small{display:block;font:600 .7rem var(--fd);letter-spacing:.3em;text-transform:uppercase;color:var(--a)}
+.cine-title b{display:block;font:700 clamp(1.5rem,5vw,2.4rem) var(--fd);letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 0 18px var(--bc,#ff7a3a),0 3px 0 #000}
+.cine-title span{display:block;font:500 .85rem var(--fb);color:#ffffffb0;margin-top:2px}
+.cine-skip{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(min(11%,70px) + 12px + env(safe-area-inset-bottom,0px));font:600 .78rem var(--fd);letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#0009;border:1px solid #ffffff40;border-radius:10px;padding:9px 14px;cursor:pointer}
+.cine-bub{position:absolute;z-index:9;left:0;top:0;max-width:min(300px,78%);background:#fdfaf3;color:#15131c;border-radius:14px;padding:9px 13px 8px;box-shadow:0 6px 0 #0005,0 0 0 3px var(--bc,#ff7a3a);pointer-events:none;transition:opacity .2s}
+.cine-bub::after{content:'';position:absolute;left:var(--tx,50%);bottom:-9px;width:16px;height:16px;background:#fdfaf3;transform:translateX(-50%) rotate(45deg);box-shadow:3px 3px 0 0 var(--bc,#ff7a3a)}
+.cine-bub.below::after{bottom:auto;top:-9px;box-shadow:-3px -3px 0 0 var(--bc,#ff7a3a)}
+.cine-bub i{display:block;font:700 .66rem var(--fd);letter-spacing:.16em;text-transform:uppercase;color:var(--bc,#ff7a3a);font-style:normal}
+.cine-bub p{margin:2px 0 0;font:600 .98rem/1.3 var(--fb)}
+.cine-bub em{display:block;margin-top:4px;font:500 .62rem var(--fb);color:#15131c80;font-style:normal;text-align:right}
+.cine-bub.say em{display:none}
+body.cine-on .hud,body.cine-on .deck{opacity:0;pointer-events:none;transition:opacity .3s}
 .intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#04040e}
 /* deitado, tablet e PC: o vídeo é vertical, então amplia o centro (onde está o logo) e funde as bordas no fundo */
 @media(min-aspect-ratio:1/1){
@@ -482,13 +500,9 @@ body.coach-on .screen:not([hidden]){padding-bottom:min(60vh,420px)}
     <div class="row" style="justify-content:space-between;align-items:center"><h3 id="audT">Áudio</h3><button class="mini" data-act="audioclose">Fechar</button></div>
     <label>Música <input type="range" min="0" max="100" data-vol="music"><span></span></label>
     <label>Efeitos <input type="range" min="0" max="100" data-vol="sfx"><span></span></label>
-    <label>Locução <input type="range" min="0" max="100" data-vol="voice"><span></span></label>
-    <label style="grid-template-columns:90px 1fr"><span>Voz</span><select id="vozSel" style="width:100%;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px;font:600 .85rem var(--fb)"></select></label>
-    <p class="hint" id="vozInfo" style="margin-top:-6px"></p>
-    <label style="grid-template-columns:1fr auto"><span>Locução da arena</span><input type="checkbox" data-vol="voz" style="width:22px;height:22px;accent-color:var(--a)"></label>
     <div class="row"><button class="btn sm" data-act="audiotest">Testar</button><button class="btn sm" data-act="sound" id="audSound">Som</button></div>
     <div class="cred"><span class="lab-tag">Créditos de áudio · todos CC0 (domínio público)</span>
-      <span>Efeitos: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> (Impact Sounds, Interface Sounds, RPG Sounds, Sci-fi Sounds e Music Jingles). Locução em português do Brasil feita pela voz do próprio aparelho.</span>
+      <span>Efeitos: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> (Impact Sounds, Interface Sounds, RPG Sounds, Sci-fi Sounds e Music Jingles).</span>
       <span>Músicas do <a href="https://opengameart.org" target="_blank" rel="noopener">OpenGameArt</a>: Main Menu Music Loop (título), Heat Battle e Heat Boss Battle (Vila Cinzenta), Dark Woods Loop e Basilisk Boss Battle Loop (Mangue de Vidro), Crystal Caves e Trance Boss Battle (Torre Prisma), Chiploop (Modo Infinito).</span>
       <span>Arquivos obtidos pelo espelho <a href="https://github.com/zuujis-cc0" target="_blank" rel="noopener">zuujis-cc0 no GitHub</a>. Sons de poderes, chefes e criaturas sintetizados no próprio jogo. Abertura: MV_NEXUS.</span></div>
   </div>
@@ -513,6 +527,12 @@ body.coach-on .screen:not([hidden]){padding-bottom:min(60vh,420px)}
     <section class="screen" id="s-lab" hidden></section>
     <section class="screen" id="s-arena" hidden>
       <div class="arena-wrap" id="aw">
+        <div class="cine" id="cine" hidden>
+          <div class="cine-bar t"></div><div class="cine-bar b"></div>
+          <div class="cine-title" id="cineTitle"><small>Chefe</small><b id="cineName"></b><span id="cineSub"></span></div>
+          <button class="cine-skip" id="cineSkip" type="button">Pular ›</button>
+        </div>
+        <div class="cine-bub" id="cineBub" hidden><i id="cineWho"></i><p id="cineTxt"></p><em id="cineNext">toque para continuar</em></div>
         <div class="field" id="field">
         <canvas id="cv"></canvas>
         <div class="hud">
@@ -1649,9 +1669,9 @@ const AUD=(()=>{
   if(SS){lerVozes();try{SS.addEventListener('voiceschanged',lerVozes)}catch(e){SS.onvoiceschanged=lerVozes}}
   function vozAtual(){const L=vozes.length?vozes:lerVozes();if(!L.length)return null;const pref=SAVE.vozName&&L.find(v=>v.name===SAVE.vozName);if(pref)return pref;
     const rank=v=>(/pt[-_]BR/i.test(v.lang)?4:0)+(/google|luciana|francisca|thalita|antonio|natural|neural|daniel|felipe/i.test(v.name)?2:0)+(v.localService?0:1);return L.slice().sort((a,b)=>rank(b)-rank(a))[0]}
-  function voice(n,gap=1200,extra){const k=performance.now();if(last.v&&k-last.v<gap)return;const v=V();if(!SAVE.sound||!v.voz||!SS||!FALAS[n])return;const vz=vozAtual();if(!vz)return;last.v=k;
+  function voice(n,gap=1200,extra){return;const k=performance.now();if(last.v&&k-last.v<gap)return;const v=V();if(!SAVE.sound||!v.voz||!SS||!FALAS[n])return;const vz=vozAtual();if(!vz)return;last.v=k;
     try{if(SS.speaking)SS.cancel();const u=new SpeechSynthesisUtterance(FALAS[n](extra));u.voice=vz;u.lang=vz.lang||'pt-BR';u.rate=1.08;u.pitch=.92;u.volume=clamp(v.voice,0,1);SS.speak(u)}catch(e){}}
-  function destravarVoz(){if(!SS||destravarVoz.ok)return;destravarVoz.ok=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;u.lang='pt-BR';SS.speak(u)}catch(e){}}
+  function destravarVoz(){return;if(!SS||destravarVoz.ok)return;destravarVoz.ok=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;u.lang='pt-BR';SS.speak(u)}catch(e){}}
   /* música: um elemento de áudio por faixa, com troca suave */
   function startTrack(k){const a=setup();if(!a)return;let T=tracks[k];
     if(!T){const el=new Audio('audio/m_'+k+'.mp3');el.loop=true;el.preload='auto';let g;try{const src=a.createMediaElementSource(el);g=a.createGain();g.gain.value=0;src.connect(g);g.connect(bus.music)}catch(e){return}T=tracks[k]={el,g}}
@@ -1799,13 +1819,93 @@ const Arena=(()=>{
     S.banner=isBoss?'CHEFE':(S.mode==='endless'&&S.wi%5===0&&S.wi>0?`ONDA ${S.wi+1}  ·  ${CHAPTERS[endTh()].name.toUpperCase()}`:`ONDA ${S.wi+1}`);S.bannerT=S.mode==='endless'&&S.wi%5===0&&S.wi>0?2.2:1.6;
     if(isBoss)Snd.play('boss');
   }
+  /* ---------- entrada dos chefes na campanha: animação + provocações ---------- */
+  const CINE={
+    ferrugem:{sub:'Guardiã da Fornalha',
+      intro:['Ora, ora... visita na minha fornalha?','Chegou na hora certa: o forno acabou de esquentar.'],
+      vs:{'Gelo':'Gelo na minha cozinha? Que gracinha. Vai virar vapor!','Água':'Água? Aqui ela ferve antes de encostar em mim.'},
+      fus:['{A} e {B}? Já derreti coisa mais dura no café da manhã.','{N}... nome bonito pra virar carvão.'],
+      weak:'Esse seu golpe vai fazer cócegas na minha blindagem.',strong:'Hum... essa fusão tem cheiro de problema. Vem logo!',
+      hero:['Vou apagar essa fornalha de vez!','Prepara o extintor, Dona Fornalha.','Sente o calor de {N}!'],
+      ph:['A grelha esquentou!','Agora tudo vira cinza!'],die:'Minha fornalha... apagou...'},
+    veu:{sub:'Ancião do Mangue',
+      intro:['Eh, criança... faz tempo que ninguém pisa no meu mangue.','Tira o sapato, menino. Aqui é casa de velho.'],
+      vs:{'Fogo':'Fogo no mangue? Aqui tudo é molhado, meu filho.','Eletricidade':'Choque na água? Cuidado pra não se queimar sozinho.'},
+      fus:['{A} com {B}? No meu tempo isso tinha outro nome: bagunça.','{N}? Já vi muita moda passar por essas raízes.'],
+      weak:'Bate mais forte. Essas raízes já aguentaram cem tempestades.',strong:'Opa... essa fusão aí me deu um frio na espinha.',
+      hero:['Com todo respeito, vovô: hoje o senhor perde.','{N} não tem medo de raiz velha!','Vou tirar essa casa das suas costas!'],
+      ph:['Minhas raízes acordaram!','Segura essa, criança!'],die:'Bom... o mangue é seu agora...'},
+    prisma:{sub:'O Experimento Final',
+      intro:['Você chegou longe demais. A luz termina aqui.','Então você é o herói de quem tanto falam...'],
+      vs:{'Sombra':'Sombra contra mim? Eu SOU a sombra.','Energia Cósmica':'Energia das estrelas... eu engulo estrelas.'},
+      fus:['{N}? Um nome bonito pra algo que vai virar sombra.','{A} e {B}... uma fusão instável. Igual a você.'],
+      weak:'Sua fusão é fraca contra a escuridão. Eu sinto daqui.',strong:'Interessante... essa combinação pode até me ferir. Tente.',
+      hero:['Até eclipse acaba, Regente.','Que herói nasce da minha fusão? Você vai descobrir agora!','O Sol Negro termina hoje!'],
+      ph:['Contemple a penumbra!','TUDO ESCURECE!'],die:'A luz... voltou...?'}
+  };
+  const pickL=L=>L[Math.floor(Math.random()*L.length)];
+  const fill=t=>t.replace(/\{A\}/g,F.A.n).replace(/\{B\}/g,F.B.n).replace(/\{N\}/g,F.name);
+  function tauntFor(key,type){const C=CINE[key],m=F.mult[type]||1;
+    const v=C.vs[F.A.n]||C.vs[F.B.n];if(v&&Math.random()<.75)return v;
+    if(m<=.92&&Math.random()<.7)return C.weak;if(m>=1.12&&Math.random()<.7)return C.strong;return fill(pickL(C.fus))}
+  const cineEl=$('#cine'),bubEl=$('#cineBub');
+  function cineStart(e){const C=CINE[e.key];if(!C)return;SAVE.bossSeen=SAVE.bossSeen||{};const first=!SAVE.bossSeen[e.key];
+    const steps=[];if(first)steps.push({who:'boss',text:pickL(C.intro)});steps.push({who:'boss',text:tauntFor(e.key,e.type)});steps.push({who:'hero',text:fill(pickL(C.hero))});
+    const bar=Math.min(FH*.11,70);S.cine={dyT:Math.max(0,bar+12-(OT+e.y-e.r*2.5)),dy:0,e,key:e.key,ph:'ent',t:0,st:0,step:0,steps,z:1,fx:e.x,fy:Math.min(e.y-e.r*2.6,H*.25),landed:false,entDur:first?1.9:1.2};e.ent=0;
+    for(const k in held)held[k]=false;joy.on=false;joy.x=joy.y=0;S.bannerT=0;
+    aw.style.setProperty('--bc',e.col);$('#cineName').textContent=e.name;$('#cineSub').textContent=C.sub;
+    cineEl.hidden=false;requestAnimationFrame(()=>{cineEl.classList.add('on');$('#cineTitle').classList.add('on')});document.body.classList.add('cine-on')}
+  function cineEnd(){const c=S&&S.cine;if(!c)return;c.e.ent=null;SAVE.bossSeen=SAVE.bossSeen||{};SAVE.bossSeen[c.key]=true;persist();S.cine=null;
+    cineEl.classList.remove('on');$('#cineTitle').classList.remove('on');bubEl.hidden=true;document.body.classList.remove('cine-on');setTimeout(()=>{if(!S||!S.cine)cineEl.hidden=true},450);
+    for(const k in trig)trig[k]=false;S.banner='LUTE!';S.bannerT=1.3;shake(6)}
+  const stepDur=s=>Math.max(2,s.text.length/24+1.1);
+  function cineNext(){const c=S&&S.cine;if(!c)return;if(c.ph==='ent'){c.t=c.entDur;return}
+    if(c.ph==='talk'){const s=c.steps[c.step],shown=Math.floor(c.st*34);if(shown<s.text.length){c.st=s.text.length/34+.05;return}c.step++;c.st=0;if(c.step>=c.steps.length){c.ph='out';c.t=0}}}
+  cineEl.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(ev.target.closest('#cineSkip'))cineEnd();else cineNext()});
+  function cineUpd(dt){const c=S.cine,e=c.e,p=S.p;c.t+=dt;parts.update(dt);S.shake=Math.max(0,S.shake-dt*20);
+    p.face=Math.atan2(e.y-p.y,e.x-p.x);
+    if(c.ph==='ent'){e.ent=clamp(c.t/c.entDur,0,1);
+      if(Math.random()<.6){const a=rnd(0,TAU);parts.burst(e.x+Math.cos(a)*e.r*1.2,e.y+e.r*.6,Math.random()<.5?e.col:e.B.col2,2,90,3,.6)}
+      if(e.ent>=1&&!c.landed){c.landed=true;shake(10);parts.burst(e.x,e.y+e.r*.6,e.col,34,260,4,.7);S.expl.push({x:e.x,y:e.y,r:120,t:.5,max:.5,col:e.col});Snd.play('boss')}
+      if(c.t>=c.entDur+.35){c.ph='talk';c.st=0;c.step=0;$('#cineTitle').classList.remove('on')}}
+    else if(c.ph==='talk'){c.st+=dt;const s=c.steps[c.step];if(c.st>stepDur(s)){c.step++;c.st=0;if(c.step>=c.steps.length){c.ph='out';c.t=0}}}
+    else if(c.ph==='out'&&c.t>.55){cineEnd();return}
+    for(const x of S.expl)x.t-=dt;S.expl=S.expl.filter(x=>x.t>0);
+    const s=c.ph==='talk'&&c.steps[c.step],tg=s&&s.who==='hero'?p:e;
+    const zt=c.ph==='out'?1:c.ph==='ent'?1+.22*Math.min(1,c.t/.8):1.22;c.z+=(zt-c.z)*Math.min(1,dt*4);
+    c.dy+=((c.ph==='out'?0:c.dyT)-c.dy)*Math.min(1,dt*4);const ty=tg===p?p.y:Math.min(e.y-e.r*2.6,H*.25);c.fx+=(tg.x-c.fx)*Math.min(1,dt*3);c.fy+=(ty-c.fy)*Math.min(1,dt*3)}
+  function entDraw(c2,e,t){const k=e.ent,ek=1-Math.pow(1-k,3);c2.save();
+    if(e.key==='ferrugem'){ // sobe da fornalha: cresce do chão com brasa
+      const gy=e.y+e.r;c2.fillStyle=hexA('#ff7a2a',.45*(1-k)+.1);c2.beginPath();c2.ellipse(e.x,gy,e.r*1.8,e.r*.6,0,0,TAU);c2.fill();
+      c2.translate(e.x,gy);c2.scale(.6+.4*ek,ek);c2.translate(-e.x,-gy)}
+    else if(e.key==='veu'){ // emerge da água do mangue
+      for(let i=0;i<3;i++){const rk=((t*.8+i/3)%1);c2.strokeStyle=hexA('#9ff0d0',.5*(1-rk));c2.lineWidth=2;c2.beginPath();c2.ellipse(e.x,e.y+e.r*.8,e.r*(1+rk*1.8),e.r*(.35+rk*.6),0,0,TAU);c2.stroke()}
+      c2.globalAlpha=Math.min(1,k*1.4);c2.translate(0,60*(1-ek))}
+    else{ // desce do céu enquanto o eclipse escurece a arena
+      c2.fillStyle=`rgba(0,0,0,${.45*Math.sin(Math.min(1,k)*Math.PI)})`;c2.fillRect(-W,-H,W*3,H*3);
+      c2.strokeStyle=hexA('#ff9a2e',.8*(1-k));c2.lineWidth=4;c2.beginPath();c2.arc(e.x,e.y,e.r*(1+3*(1-k)),0,TAU);c2.stroke();
+      c2.translate(0,-280*Math.pow(1-k,2))}
+    drawEnemy(c2,e,t);c2.restore()}
+  function bossSay(e,text,dur=2.4){if(!S||S.mode!=='camp'||!text)return;S.say={x:e.x,y:e.y,r:e.r,col:e.col,name:e.name,text,t:dur,max:dur}}
+  function bubPos(x,top,bottom,z,fx,fy,dy=0){const sx=fx+(x-fx)*z,stop=OT+dy+fy+(top-fy)*z,sbot=OT+dy+fy+(bottom-fy)*z;
+    const bw=bubEl.offsetWidth,bh=bubEl.offsetHeight;let left=clamp(sx-bw/2,8,W-bw-8),y=stop-bh-14,below=false;
+    if(y<OT+8){y=sbot+14;below=true}bubEl.classList.toggle('below',below);bubEl.style.transform=`translate(${left}px,${y}px)`;bubEl.style.setProperty('--tx',clamp(sx-left,18,bw-18)+'px')}
+  function cineDom(){if(!S){bubEl.hidden=true;return}const c=S.cine;
+    if(c&&c.ph==='talk'){const s=c.steps[c.step],e=c.e,p=S.p,boss=s.who==='boss';bubEl.hidden=false;bubEl.classList.remove('say');
+      $('#cineWho').textContent=boss?e.name:(SAVE.name||F.name);bubEl.style.setProperty('--bc',boss?e.col:F.c1);
+      const n=Math.min(s.text.length,Math.floor(c.st*34));const txt=s.text.slice(0,n);if($('#cineTxt').textContent!==txt)$('#cineTxt').textContent=txt;
+      if(boss)bubPos(e.x,e.y-e.r*2.3,e.y+e.r,c.z,c.fx,c.fy,c.dy);else bubPos(p.x,p.y-48,p.y+26,c.z,c.fx,c.fy,c.dy);return}
+    if(c){bubEl.hidden=true;return}
+    const q=S.say;if(q&&q.t>0){bubEl.hidden=false;bubEl.classList.add('say');$('#cineWho').textContent=q.name;bubEl.style.setProperty('--bc',q.col);
+      if($('#cineTxt').textContent!==q.text)$('#cineTxt').textContent=q.text;bubEl.style.opacity=Math.min(1,q.t*3);bubPos(q.x,q.y-q.r*2.3,q.y+q.r,1,q.x,q.y)}
+    else{bubEl.hidden=true;bubEl.style.opacity=''}}
   function bossKey(){return S.mode==='endless'?['ferrugem','veu','prisma'][endTh()]:CHAPTERS[S.ch].boss}
   function spawn(kind){
     let x,y,tries=0;do{const side=Math.floor(Math.random()*4);
       x=side<2?rnd(M+20,W-M-20):(side===2?M+10:W-M-10);y=side<2?(side===0?M+40:H-M-10):rnd(M+50,H-M-20);tries++}while(dst({x,y},S.p)<150&&tries<8);
     if(kind==='boss'){const key=bossKey(),B=BOSSES[key];
       const e={key,th:['ferrugem','veu','prisma'].indexOf(key),boss:true,name:B.name,type:B.type,col:B.col,col2:B.col2,x:W/2,y:M+125,r:B.r,spd:B.spd,dmg:B.contact,phase:0,ai:'boss',B,xp:300,coin:60,cry:B.hp>1600?4:3};
-      e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);return}
+      e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);if(S.mode==='camp')cineStart(e);return}
     if(kind==='mini'){const m=MINIS[S.mode==='endless'?endTh():S.ch];
       const e={key:'mini',mini:true,th:S.mode==='endless'?endTh():S.ch,name:m.n,type:m.type,col:m.col,x,y,r:26,spd:62,dmg:20,ai:'brute',xp:140,coin:30,cry:2};e.maxHp=e.hp=520*S.hpS;S.en.push(initE(e));return}
     const d=ENEMIES[kind],th=S.mode==='endless'?endTh():S.ch;const e={key:kind,th,name:(SKIN_NAMES[th]||{})[kind]||d.n,type:d.type,col:d.col,x,y,r:d.r,spd:d.spd,dmg:d.dmg,ai:d.ai,xp:d.xp,coin:d.coin};
@@ -1869,7 +1969,7 @@ const Arena=(()=>{
     if(e.cry){SAVE.cry+=e.cry;S.run.cry+=e.cry}
     if(!e.boss&&!e.mini&&Math.random()<.12)S.drops.push({x:e.x,y:e.y,t:9});
     if(e.mini||e.boss){const rar=e.boss?(Math.random()<.35?2:1):(Math.random()<.25?1:0);const it=makeItem(rar);SAVE.inv.push(it);S.run.items.push(it)}
-    if(e.boss){SAVE.stats.boss++;S.state='bossdead';S.stT=1.6;S.bossE=null;hud.hBoss.hidden=true;S.slow=.8;
+    if(e.boss){SAVE.stats.boss++;S.state='bossdead';S.stT=1.6;if(CINE[e.key])bossSay(e,CINE[e.key].die,2.2);S.bossE=null;hud.hBoss.hidden=true;S.slow=.8;
       S.eb.length=0;S.beams.length=0;S.later.length=0;S.rings.length=0;stopDrones();S.hz.length=0;S.walls.length=0;S.en.forEach(x=>{if(x!==e&&!x.dead){x.dead=true;parts.burst(x.x,x.y,x.col,8)}})}
     persist();
   }
@@ -2200,7 +2300,7 @@ const Arena=(()=>{
   }
   function bossAI(e,dt,d){
     const p=S.p,B=e.B,frac=e.hp/e.maxHp,ph=frac>.66?0:frac>.33?1:2;
-    if(ph!==e.phase){e.phase=ph;e.inv=1.2;e.act=0;e.cdA=1;e.chargeT=0;e.pulling=0;S.banner=`FASE ${ph+1}`;S.bannerT=1.6;S.expl.push({x:e.x,y:e.y,r:140,t:.5,max:.5,col:e.col});shake(8);
+    if(ph!==e.phase){e.phase=ph;e.inv=1.2;e.act=0;e.cdA=1;e.chargeT=0;e.pulling=0;S.banner=`FASE ${ph+1}`;S.bannerT=1.6;if(CINE[e.key])bossSay(e,CINE[e.key].ph[ph-1]);S.expl.push({x:e.x,y:e.y,r:140,t:.5,max:.5,col:e.col});shake(8);
       S.eb.length=0;S.beams=S.beams.filter(b=>b.pl);Snd.play('boss')}
     if(e.inv>0)e.inv-=dt;
     if(e.act>0)e.act-=dt;
@@ -2243,6 +2343,8 @@ const Arena=(()=>{
   /* ---------- laço principal ---------- */
   function update(dt){
     if(!S||S.paused)return;
+    if(S.cine){cineUpd(dt);return}
+    if(S.say&&S.say.t>0)S.say.t-=dt;
     if(S.slow>0){S.slow-=dt;dt*=.35}
     S.t+=dt;S.denyT=Math.max(0,(S.denyT||0)-dt);
     const p=S.p;
@@ -2375,6 +2477,7 @@ const Arena=(()=>{
     c.strokeStyle='#ffffff22';c.lineWidth=2;rr(c,M/2,M/2+4,W-M,H-M-4,10);c.stroke();
     if(!S){return}
     c.save();if(S.shake>0)c.translate(rnd(-S.shake,S.shake),rnd(-S.shake,S.shake));
+    if(S.cine){const q=S.cine;c.translate(0,q.dy);c.translate(q.fx,q.fy);c.scale(q.z,q.z);c.translate(-q.fx,-q.fy)}
     // zonas
     for(const z of S.zones){const k=Math.min(1,z.t/.5);const gr=c.createRadialGradient(z.x,z.y,4,z.x,z.y,z.r);gr.addColorStop(0,hexA(z.col,.35*k));gr.addColorStop(1,hexA(z.col2,.1*k));c.fillStyle=gr;c.beginPath();c.arc(z.x,z.y,z.r,0,TAU);c.fill();c.strokeStyle=hexA(z.col,.7*k);c.lineWidth=2;c.setLineDash([6,6]);c.lineDashOffset=-t*20;c.stroke();c.setLineDash([])}
     drawHz(c,t,'ground');
@@ -2383,8 +2486,8 @@ const Arena=(()=>{
     for(const k of S.tele){const a=1-k.t/k.max;c.fillStyle=hexA(k.col,.12+a*.18);c.strokeStyle=hexA(k.col,.8);c.lineWidth=2;
       if(k.kind==='c'){c.beginPath();c.arc(k.x,k.y,k.r*(.4+.6*a),0,TAU);c.fill();c.beginPath();c.arc(k.x,k.y,k.r,0,TAU);c.stroke()}
       else{c.save();c.translate(k.x,k.y);c.rotate(k.a);c.fillRect(0,-k.w/2,k.len,k.w);if(k.edge){c.lineWidth=3;c.beginPath();c.moveTo(0,-k.w/2);c.lineTo(k.len,-k.w/2);c.moveTo(0,k.w/2);c.lineTo(k.len,k.w/2);c.stroke()}c.restore()}}
-    for(const e of S.en){c.fillStyle='#0006';c.beginPath();c.ellipse(e.x,e.y+e.r*.8,e.r*.9,e.r*.35,0,0,TAU);c.fill()}
-    ART_P=S.p;for(const e of S.en)drawEnemy(c,e,t);drawHz(c,t,'mid');
+    for(const e of S.en){if(e.ent!=null&&e.ent<.9)continue;c.fillStyle='#0006';c.beginPath();c.ellipse(e.x,e.y+e.r*.8,e.r*.9,e.r*.35,0,0,TAU);c.fill()}
+    ART_P=S.p;for(const e of S.en){if(e.ent!=null)entDraw(c,e,t);else drawEnemy(c,e,t)}drawHz(c,t,'mid');
     const p=S.p;c.fillStyle='#0007';c.beginPath();c.ellipse(p.x,p.y+22,13-p.z*.1,5,0,0,TAU);c.fill();
     if(S.state!=='lose'){if(p.inv>0&&Math.floor(t*30)%2&&!p.dash&&!p.guard&&p.supInv<=0&&!p.shield)c.globalAlpha=.5;
       const sk=SKINS.find(s=>s.id===SAVE.skin);drawHero(c,p.x,p.y-p.z*.6,1.2,F,ST.ev.tier,t,{glow:sk&&sk.glow,hurt:p.hurt>0?p.hurt*2:0,body:SAVE.body,yaw:Math.PI/2-(p.face||0),pose:{v:p.mv||0,ph:p.ph||0,atk:(p.atkT||0)/.28,cast:(p.castT||0)/.55,sup:p.supT>0?1:0,dash:!!p.dash,guard:!!p.guard,hurt:Math.min(1,(p.hurt||0)/.3),z:p.z}});c.globalAlpha=1;
@@ -2408,7 +2511,7 @@ const Arena=(()=>{
     c.restore();
     if(S.flash>0){c.fillStyle=`rgba(255,255,255,${Math.min(.5,S.flash*1.2)})`;c.fillRect(0,0,W,H)}
     if(p.hp/ST.maxHp<.3&&S.state!=='lose'){const a=.15+Math.sin(t*6)*.05;const vg=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.9);vg.addColorStop(0,'rgba(255,40,70,0)');vg.addColorStop(1,`rgba(255,40,70,${a*2})`);c.fillStyle=vg;c.fillRect(0,0,W,H)}
-    if(S.bannerT>0&&S.banner){const a=Math.min(1,S.bannerT*2,(2.2-Math.min(S.bannerT,2.2))*4+.2);c.globalAlpha=Math.max(0,Math.min(1,a));c.textAlign='center';c.font='700 '+(W<500?20:28)+'px Chakra Petch,system-ui,sans-serif';c.fillStyle='#000';c.fillText(S.banner,W/2+2,H*.36+2);c.fillStyle='#fff';c.fillText(S.banner,W/2,H*.36);c.globalAlpha=1}
+    if(S.bannerT>0&&S.banner&&!S.cine){const a=Math.min(1,S.bannerT*2,(2.2-Math.min(S.bannerT,2.2))*4+.2);c.globalAlpha=Math.max(0,Math.min(1,a));c.textAlign='center';c.font='700 '+(W<500?20:28)+'px Chakra Petch,system-ui,sans-serif';c.fillStyle='#000';c.fillText(S.banner,W/2+2,H*.36+2);c.fillStyle='#fff';c.fillText(S.banner,W/2,H*.36);c.globalAlpha=1}
   }
   let hudCache={};
   const setW=(k,v)=>{const s=v.toFixed(1)+'%';if(hudCache[k]!==s){hudCache[k]=s;hud[k].style.width=s}};
@@ -2431,7 +2534,7 @@ const Arena=(()=>{
     raf=requestAnimationFrame(loop);
     const dt=Math.min(.05,(ts-lastT)/1000||0);lastT=ts;
     if(!active)return;
-    try{update(dt);draw();updHud();tutEl.hidden=!(S&&S.state==='tut')}catch(err){console.error(err)}
+    try{update(dt);draw();updHud();cineDom();tutEl.hidden=!(S&&S.state==='tut')}catch(err){console.error(err)}
   }
 
   /* ---------- tutorial ---------- */
@@ -2517,7 +2620,7 @@ const Arena=(()=>{
   }
   function pause(on){
     if(!S||S.state==='lose'||S.state==='win')return;
-    S.paused=on;AUD.setDuck(on);if(on)stopDrones();$('#btnPause').textContent=on?'Continuar':'Pausar';
+    S.paused=on;AUD.setDuck(on);cineEl.style.display=on?'none':'';bubEl.style.visibility=on?'hidden':'';if(on)stopDrones();$('#btnPause').textContent=on?'Continuar':'Pausar';
     if(on)showOv(`<span class="lab-tag">Pausado</span><h2>Respire um instante</h2><div class="opts"><button class="btn pri" data-act="pause">Continuar</button><button class="btn" data-act="quit">Abandonar missão</button><button class="btn" data-act="go" data-arg="menu">Sair para o menu</button></div>`);
     else hideOv();
   }
@@ -2555,13 +2658,13 @@ const Arena=(()=>{
 
   requestAnimationFrame(loop);
   return{
-    start(mode,tutorial){stopDrones();tutRestore();newRun(mode==='endless'?'endless':'camp',mode==='endless'?0:+mode);resize();S.p.x=W/2;S.p.y=H*.62;
+    start(mode,tutorial){stopDrones();if(S&&S.cine)cineEnd();tutRestore();newRun(mode==='endless'?'endless':'camp',mode==='endless'?0:+mode);resize();S.p.x=W/2;S.p.y=H*.62;
       if(S.mode==='camp'&&S.ch===0&&(tutorial===true||(!SAVE.tutDone&&!SAVE.cleared[0]&&!SAVE.stats.waves))){S.state='tut';S.bannerT=0;S.tut={stats:Object.assign({},SAVE.stats)};S.p.y=H*.72;tutStep(0)}},
     tutNext,tutEnd,
     enter(){active=true;resize();if(!S||S.state==='lose'||S.state==='win')showIdle();},
     leave(){active=false;if(S&&!S.paused&&S.state!=='lose'&&S.state!=='win')pause(true);for(const k in keys)keys[k]=false;held.atk=held.guard=false},
     pause,showIdle,hasRun:()=>!!S&&S.state!=='lose'&&S.state!=='win',
-    quit(){AUD.music('title');AUD.setDuck(false);stopDrones();tutRestore();S=null;hideOv();hud.hBoss.hidden=true;showIdle()},
+    quit(){if(S&&S.cine)cineEnd();AUD.music('title');AUD.setDuck(false);stopDrones();tutRestore();S=null;hideOv();hud.hBoss.hidden=true;showIdle()},
     retry(){if(S)this.start(S.mode==='endless'?'endless':S.ch)},
     get S(){return S},get F(){return F},get ST(){return ST},
     _test:{endTh,SFX,perfectDodge,update,hitEnemy,spawn,cast,keys,trig,held,kill,ATK},_dims:()=>({W,H,FH,OT,OB,XR})
@@ -2985,14 +3088,9 @@ const Intro=(()=>{
 })();
 Intro.open(true);
 (()=>{const dlg=$('#audioDlg');const sync=()=>{const v=Object.assign({music:.5,sfx:.9,voice:.85,voz:true},SAVE.vol||{});
-  const sel=$('#vozSel'),L=AUD.vozes(),at=AUD.vozAtual();
-  sel.innerHTML=L.length?L.map(v=>`<option value="${esc(v.name)}" ${at&&at.name===v.name?'selected':''}>${esc(v.name)} (${esc(v.lang)})</option>`).join(''):'<option>Nenhuma voz em português</option>';sel.disabled=!L.length;
-  $('#vozInfo').textContent=L.length?'Vozes em português instaladas neste aparelho.':'Este aparelho não tem voz em português instalada. No Android: Configurações > Idioma > Saída de texto para voz. No iPhone: Ajustes > Acessibilidade > Conteúdo Falado > Vozes.';
   $$('[data-vol]',dlg).forEach(i=>{const k=i.dataset.vol;if(i.type==='checkbox')i.checked=!!v[k];else{i.value=Math.round(v[k]*100);i.nextElementSibling.textContent=i.value}});$('#audSound').textContent='Som: '+(SAVE.sound?'ligado':'desligado')};
   dlg.addEventListener('input',e=>{const i=e.target.closest('[data-vol]');if(!i)return;SAVE.vol=Object.assign({music:.5,sfx:.9,voice:.85,voz:true},SAVE.vol||{});SAVE.vol[i.dataset.vol]=i.type==='checkbox'?i.checked:i.value/100;AUD.apply();sync();persist()});
   dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.hidden=true});
-  $('#vozSel').addEventListener('change',e=>{SAVE.vozName=e.target.value;persist();AUD.voice('v_test',0)});
-  if(window.speechSynthesis)try{speechSynthesis.addEventListener('voiceschanged',()=>{if(!dlg.hidden)sync()})}catch(e){}
   new MutationObserver(()=>{if(!dlg.hidden)sync()}).observe(dlg,{attributes:true,attributeFilter:['hidden']});
   const ow=updWallet;updWallet=function(){ow();$('#audSound').textContent='Som: '+(SAVE.sound?'ligado':'desligado')};})();
 /* ===== GUIAS: cada tela explica o que é, para que serve e como conseguir as coisas ===== */

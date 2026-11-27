@@ -658,6 +658,7 @@ const POWERS=[
  {id:'espirito',k:1.05,n:'Espírito',cat:'sobrenatural',c:'#fff1a8',c2:'#9be7ff',title:'Guardião',of:'da Alma',st:[12,8,11,8,11],pat:'burst',mod:'drain',sp:'shield',fx:'spark',shot:'star',tag:'spirit',unlock:{boss:2},desc:'Sustento, proteção e luz sobre espectros.'}
 ];
 const P={};POWERS.forEach(p=>P[p.id]=p);
+const FUS_TOTAL=POWERS.length*(POWERS.length+1)/2;
 
 const CURATED={
  'fogo|gelo':'Criogênese Vulcânica','raio|velocidade':'Relâmpago Vivo','agua|terra':'Guardião Abissal',
@@ -672,6 +673,7 @@ const SYN=[['metal','fogo'],['raio','velocidade'],['agua','terra'],['vento','ene
 const pairKey=(a,b)=>[a,b].sort().join('|');
 
 function relation(a,b){
+  if(a===b)return {k:'pura',n:'Fusão pura',d:'+10% de dano e forças e fraquezas mais extremas',dmg:1.1,hp:1,regen:0,cdr:0,def:0};
   const k=pairKey(a,b), has=L=>L.some(p=>pairKey(p[0],p[1])===k);
   if(has(OPP)) return {k:'instavel',n:'Fusão instável',d:'+12% de dano, −10% de vida máxima',dmg:1.12,hp:.9,regen:0,cdr:0,def:0};
   if(P[a].cat===P[b].cat||has(SYN)) return {k:'harmonia',n:'Fusão harmônica',d:'+15% de energia regenerada, −6% de recarga',dmg:1,hp:1,regen:.15,cdr:.06,def:0};
@@ -683,6 +685,7 @@ function relation(a,b){
    Essência-> efeito de status do ataque básico, habilidade II, silhueta (ombros)
    Atributos = 55% núcleo + 45% essência (orçamento fixo de 50 pontos: equilíbrio) */
 function makeFusion(a,b){
+  if(a===b)return makePure(a);
   const A=P[a],B=P[b];
   const stats=A.st.map((v,i)=>v*.55+B.st[i]*.45),k=A.k||1;
   const rel=relation(a,b);
@@ -704,6 +707,25 @@ function makeFusion(a,b){
     sp2:{type:t2,name:`${SPECIAL[t2].n} ${B.of}`,mods},
     supreme:{name:`Apoteose ${A.of} e ${B.of}`,mods},
     lore:`O ${A.n.toLowerCase()} dá forma ao ataque; a essência de ${B.n.toLowerCase()} impõe ${MODS[B.mod].n.toLowerCase()}.`};
+}
+
+/* fusão pura: o mesmo poder nos dois lados. Mais forte no que já vence, mais fraco no que já perde */
+function makePure(a){
+  const A=P[a],hi=A.st.indexOf(Math.max(...A.st)),lo=A.st.indexOf(Math.min(...A.st));
+  const stats=A.st.map((v,i)=>v*(i===hi?1.15:i===lo?.88:1));
+  const mult={};ENEMY_TYPES.forEach(t=>{const m=MULT[t][A.tag]||1;mult[t]=+(1+(m-1)*1.5).toFixed(2)});
+  const strong=ENEMY_TYPES.filter(t=>mult[t]>=1.12).sort((x,y)=>mult[y]-mult[x]);
+  const weak=ENEMY_TYPES.filter(t=>mult[t]<=.92).sort((x,y)=>mult[x]-mult[y]);
+  const t1=A.sp,t2=SPECIAL_ORDER[(SPECIAL_ORDER.indexOf(t1)+3)%SPECIAL_ORDER.length],mods=[A.mod];
+  const name=CURATED[a+'|'+a]||`${A.title} Absoluto`;
+  return {a,b:a,A,B:A,k:A.k||1,name,curated:!!CURATED[a+'|'+a],pure:true,
+    c1:A.c,c2:A.c2,c3:A.c2,c4:A.c,stats,rel:relation(a,a),mult,strong,weak,weakStat:STAT_NAMES[lo],
+    pat:A.pat,mod:A.mod,mods,fx:[A.fx,A.fx],shot:A.shot,shot2:A.shot,
+    catLabel:`${CATS[A.cat]} puro`,style:`${PAT[A.pat].n} com ${MODS[A.mod].n.toLowerCase()} reforçado`,
+    sp1:{type:t1,name:`${SPECIAL[t1].n} ${A.of}`,mods},
+    sp2:{type:t2,name:`${SPECIAL[t2].n} ${A.of} Maior`,mods},
+    supreme:{name:`Apoteose Pura ${A.of}`,mods},
+    lore:`Fusão pura: o ${A.n.toLowerCase()} dobrado fica mais forte contra quem já sofria com ele, e mais fraco contra quem já resistia.`};
 }
 
 /* ===== PROGRESSÃO ===== */
@@ -2065,6 +2087,7 @@ const Arena=(()=>{
   const pickL=L=>L[Math.floor(Math.random()*L.length)];
   const fill=t=>t.replace(/\{A\}/g,F.A.n).replace(/\{B\}/g,F.B.n).replace(/\{N\}/g,F.name);
   function tauntFor(key,type){const C=CINE[key],m=F.mult[type]||1;
+    if(F.pure&&Math.random()<.6)return pickL([`${F.A.n} puro? Um truque só. Eu já conheço.`,`Só ${F.A.n.toLowerCase()}? Nem se deu ao trabalho de misturar?`,`${F.A.n} com ${F.A.n}... coragem ou falta de criatividade?`]);
     const v=C.vs[F.A.n]||C.vs[F.B.n];if(v&&Math.random()<.75)return v;
     if(m<=.92&&Math.random()<.7)return C.weak;if(m>=1.12&&Math.random()<.7)return C.strong;return fill(pickL(C.fus))}
   const cineEl=$('#cine'),bubEl=$('#cineBub');
@@ -3061,7 +3084,7 @@ function rMenu(){
     </div></div></div>
   <div class="grid3">
     <div class="panel"><span class="lab-tag">Campanha</span><h3>${done}/${CHAPTERS.length} capítulos</h3><p class="mut">${CHAPTERS.length} arenas, cada uma com mini chefe e chefe de capítulo.</p></div>
-    <div class="panel"><span class="lab-tag">Fusões</span><h3>${Object.keys(SAVE.disc).length}/153 descobertas</h3><p class="mut">18 poderes em 8 categorias. Quem escolhe o núcleo muda o estilo de combate.</p></div>
+    <div class="panel"><span class="lab-tag">Fusões</span><h3>${Object.keys(SAVE.disc).length}/${FUS_TOTAL} descobertas</h3><p class="mut">18 poderes em 8 categorias. Quem escolhe o núcleo muda o estilo de combate.</p></div>
     <div class="panel"><span class="lab-tag">Próxima evolução</span><h3>${next?`Nível ${next.l}`:'Ascensão'}</h3><p class="mut">${next?next.n+': '+next.d:'Cada nível após o 30 concede maestria: +2% de dano.'}</p></div>
   </div>
   <div class="panel"><span class="lab-tag">O que já funciona neste protótipo</span>
@@ -3247,13 +3270,12 @@ function rBoss(){
 function rDisc(){
   const n=POWERS.length;let cells='';
   for(let i=0;i<n;i++)for(let j=0;j<n;j++){
-    if(i===j){cells+='<button class="x" tabindex="-1" aria-hidden="true"></button>';continue}
     const a=POWERS[i],b=POWERS[j],k=pairKey(a.id,b.id),d=SAVE.disc[k];
     cells+=`<button class="${d?'d':''}" style="--c1:${a.c};--c2:${b.c}" data-act="labpair" data-arg="${a.id}|${b.id}" title="${d?esc(makeFusion(a.id,b.id).name):a.n+' + '+b.n+' (não descoberta)'}" aria-label="${a.n} mais ${b.n}"></button>`;
   }
   const found=Object.keys(SAVE.disc).map(k=>{const[a,b]=k.split('|');return makeFusion(a,b)});
-  $('#s-disc').innerHTML=`<div><span class="lab-tag">Histórico de descobertas</span><h2>${found.length} de 153 fusões</h2></div>
-  <div class="grid2"><div class="panel"><span class="lab-tag">Mapa de fusões</span><p class="hint" style="margin:4px 0 10px">Cada quadrado é um par de poderes. Toque para abrir no laboratório.</p><div class="matrix">${cells}</div></div>
+  $('#s-disc').innerHTML=`<div><span class="lab-tag">Histórico de descobertas</span><h2>${found.length} de ${FUS_TOTAL} fusões</h2></div>
+  <div class="grid2"><div class="panel"><span class="lab-tag">Mapa de fusões</span><p class="hint" style="margin:4px 0 10px">Cada quadrado é um par de poderes; a diagonal são as fusões puras (o mesmo poder dos dois lados). Toque para abrir no laboratório.</p><div class="matrix">${cells}</div></div>
   <div class="panel list"><span class="lab-tag">Fusões descobertas</span><div class="chips">${found.map(F=>`<span class="pw" style="--c1:${F.c1};--c2:${F.c2}"><i></i>${esc(F.name)}</span>`).join('')}</div></div></div>
   <div class="panel list"><span class="lab-tag">Conquistas</span><div class="grid3">${ACHIEVEMENTS.map(a=>`<div class="item"><div><b style="font-family:var(--fd)">${a.n}</b><br><span class="mut">${a.d}</span></div><span class="tag ${SAVE.ach[a.id]?'good':'dis'}">${SAVE.ach[a.id]?'Conquistada':a.cry+' cristais'}</span></div>`).join('')}</div></div>`;
 }
@@ -3324,7 +3346,7 @@ document.addEventListener('click',e=>{
     case 'swap':[lab.core,lab.ess]=[lab.ess,lab.core];labRender();break;
     case 'pick':{if(!isUnlocked(arg,SAVE)){toast(`${P[arg].n}: ${unlockText(arg)}`);break}
       const other=lab.slot==='core'?'ess':'core';
-      if(lab[other]===arg){[lab.core,lab.ess]=[lab.ess,lab.core]}else lab[lab.slot]=arg;
+      lab[lab.slot]=arg;
       lab.slot=other;labRender();break}
     case 'labpair':{const[a,b]=arg.split('|');if(!isUnlocked(a,SAVE)||!isUnlocked(b,SAVE)){toast('Poder ainda bloqueado: '+[a,b].filter(x=>!isUnlocked(x,SAVE)).map(x=>P[x].n+' ('+unlockText(x)+')').join(', '));break}
       lab.core=a;lab.ess=b;show('lab');break}

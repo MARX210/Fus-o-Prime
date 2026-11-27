@@ -2116,6 +2116,7 @@ const Arena=(()=>{
     const steps=[];if(first)steps.push({who:'boss',text:pickL(C.intro)});steps.push({who:'boss',text:tauntFor(e.key,e.type)});steps.push({who:'hero',text:fill(pickL(C.hero))});
     const bar=Math.min(FH*.11,70);S.cine={dyT:Math.max(0,bar+12-(OT+e.y-e.r*2.5)),dy:0,e,key:e.key,ph:'ent',t:0,st:0,step:0,steps,z:1,fx:e.x,fy:Math.min(e.y-e.r*2.6,H*.25),landed:false,entDur:first?1.9:1.2};e.ent=0;
     for(const k in held)held[k]=false;joy.on=false;joy.x=joy.y=0;S.bannerT=0;
+    {const p=S.p,far=Math.max(230,e.r*6);if(dst(p,e)<far){S.cine.mv={x0:p.x,y0:p.y,x:clamp(W/2+(p.x-W/2)*.4,M+30,W-M-30),y:Math.min(H-M-30,e.y+far)}}}
     aw.style.setProperty('--bc',e.col);$('#cineName').textContent=e.name;$('#cineSub').textContent=C.sub;
     cineEl.hidden=false;requestAnimationFrame(()=>{cineEl.classList.add('on');$('#cineTitle').classList.add('on')});document.body.classList.add('cine-on')}
   function cineEnd(){const c=S&&S.cine;if(!c)return;c.e.ent=null;SAVE.bossSeen=SAVE.bossSeen||{};SAVE.bossSeen[c.key]=true;persist();S.cine=null;
@@ -2126,6 +2127,7 @@ const Arena=(()=>{
     if(c.ph==='talk'){const s=c.steps[c.step],shown=Math.floor(c.st*34);if(shown<s.text.length){c.st=s.text.length/34+.05;return}c.step++;c.st=0;if(c.step>=c.steps.length){c.ph='out';c.t=0}}}
   cineEl.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(ev.target.closest('#cineSkip'))cineEnd();else cineNext()});
   function cineUpd(dt){const c=S.cine,e=c.e,p=S.p;c.t+=dt;parts.update(dt);S.shake=Math.max(0,S.shake-dt*20);
+    if(c.mv){const k=Math.min(1,c.t/.9),q=1-Math.pow(1-k,3);p.x=c.mv.x0+(c.mv.x-c.mv.x0)*q;p.y=c.mv.y0+(c.mv.y-c.mv.y0)*q;p.mv=k<1?1:0;p.ph=(p.ph||0)+dt*12*(k<1?1:0);if(k>=1)c.mv=null}
     p.face=Math.atan2(e.y-p.y,e.x-p.x);
     if(c.ph==='ent'){e.ent=clamp(c.t/c.entDur,0,1);
       if(Math.random()<.6){const a=rnd(0,TAU);parts.burst(e.x+Math.cos(a)*e.r*1.2,e.y+e.r*.6,Math.random()<.5?e.col:e.B.col2,2,90,3,.6)}
@@ -2173,7 +2175,7 @@ const Arena=(()=>{
     if(kind==='boss'){const key=bossKey(),B=BOSSES[key];
       const XTRA={ferrugem:'slam',veu:'pull',prisma:'spiral',mariposa:'po',viuva:'mare'},dv=S.mode==='endless'?1:S.diff,BB=dv<2?B:Object.assign({},B,{phases:B.phases.map(p=>({seq:dv>=3?[...p.seq,XTRA[key]]:p.seq,gap:p.gap*(dv>=3?.8:.9)}))});
       const e={key,th:CHAPTERS.findIndex(c=>c.boss===key),boss:true,name:B.name,type:B.type,col:B.col,col2:B.col2,x:W/2,y:M+125,r:B.r,spd:B.spd,dmg:B.contact,phase:0,ai:'boss',B:BB,xp:300,coin:60,cry:B.hp>1600?4:3};
-      e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);if(S.mode==='camp')cineStart(e);return}
+      e.maxHp=e.hp=B.hp*S.hpS;S.en.push(initE(e));S.bossE=e;if(dst(S.p,e)<170){const a=ang(e,S.p);S.p.vx+=Math.cos(a)*700;S.p.vy+=Math.max(300,Math.sin(a)*700)}hud.hBoss.hidden=false;hud.hBossN.textContent=B.name;Snd.play('boss');AUD.voice('v_final',1200,B.name);if(S.mode==='camp')cineStart(e);return}
     if(kind==='mini'){const m=MINIS[S.mode==='endless'?endTh():S.ch];
       const e={key:'mini',mini:true,th:S.mode==='endless'?endTh():S.ch,name:m.n,type:m.type,col:m.col,x,y,r:26,spd:62,dmg:20,ai:m.ai||'brute',xp:140,coin:30,cry:2};e.maxHp=e.hp=520*S.hpS;S.en.push(initE(e));return}
     const d=ENEMIES[kind],th=S.mode==='endless'?endTh():S.ch;const e={key:kind,th,name:(SKIN_NAMES[th]||{})[kind]||d.n,type:d.type,col:d.col,x,y,r:d.r,spd:d.spd,dmg:d.dmg,ai:d.ai,xp:d.xp,coin:d.coin};

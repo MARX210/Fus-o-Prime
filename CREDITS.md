@@ -33,3 +33,7 @@ As assinaturas dos 18 poderes, os avisos dos chefes e os grunhidos das criaturas
 
 ## Locução
 Feita pela voz em português do Brasil instalada no aparelho do jogador (Web Speech).
+
+## Cenários
+
+Artes do Jardim da Lua Oca e da Catedral das Marés (capítulos 4 e 5): criadas por Marx Vinicius para o jogo.

@@ -247,8 +247,11 @@ input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line
   .mini{padding:9px 12px}
   .swap{width:44px;height:44px}
 }
-/* arena imersiva: celulares (retrato e paisagem) */
-@media(max-width:720px),(max-height:520px){
+/* arena imersiva: celulares (retrato e paisagem) e computador (tela toda, sem botões) */
+@media(hover:hover) and (pointer:fine){
+  .deck .joyz,.deck .btns,.deck .skbar{display:none!important}
+}
+@media(max-width:720px),(max-height:520px),(hover:hover) and (pointer:fine){
   body.arena-on .top,body.arena-on .tabs,body.arena-on .hint,body.arena-on .more-sheet,body.arena-on .labbar{display:none!important}
   body.arena-on #app{padding:0;max-width:none}
   body.arena-on .arena-wrap{position:fixed;inset:0;z-index:40;height:auto;min-height:0;border:0;border-radius:0}
@@ -272,6 +275,12 @@ input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line
   body.arena-on .deck .ab.tut-hl,body.arena-on .joyz.tut-hl .joyb{opacity:1}
 }
 @media(max-height:520px){
+  body.arena-on .deck .ab{opacity:.5;transition:opacity .12s,box-shadow .15s,border-color .15s}
+  body.arena-on .deck .ab.rdy:not(.locked){opacity:.72}
+  body.arena-on .deck .ab.locked{opacity:.24}
+  body.arena-on .deck .ab.on,body.arena-on .deck .ab:active,body.arena-on .deck .ab.tut-hl{opacity:1}
+  body.arena-on .joyb{opacity:.28}
+  body.arena-on .skbar{background:none;border-color:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
   .btns{transform:scale(.86)}.skbar{transform:translateX(-50%) scale(.88);transform-origin:bottom center;bottom:calc(8px + env(safe-area-inset-bottom,0px))}
   .joyb{width:100px;height:100px}
 }
@@ -1680,11 +1689,19 @@ const Arena=(()=>{
   function resize(){const r=aw.getBoundingClientRect();if(r.width<50||r.height<50)return;W=Math.max(260,Math.floor(r.width));FH=Math.max(200,Math.floor(r.height));dpr=Math.min(2,window.devicePixelRatio||1);
     cv.width=W*dpr;cv.height=FH*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
     // topo: o mundo começa abaixo das barras (vida/energia/supremo) e da faixa da barra do chefe
-    const hl=$('.hud-l',aw).getBoundingClientRect(),hr=$('.hud-r',aw).getBoundingClientRect();
-    let top=Math.max(hl.bottom,hr.height?hr.bottom:0)-r.top+6;hud.hBoss.style.top=top+'px';top+=32;
-    OT=Math.max(0,Math.round(top-12));OB=0;XR=null;
-    // retrato no celular: controles por cima do campo; o herói não desce para trás deles
-    if(document.body.classList.contains('arena-on')&&matchMedia('(max-width:720px) and (orientation:portrait)').matches){
+    const hl=$('.hud-l',aw).getBoundingClientRect(),hr=$('.hud-r',aw).getBoundingClientRect(),bs=hud.hBoss.style;
+    OT=0;OB=0;XR=null;
+    const portrait=document.body.classList.contains('arena-on')&&matchMedia('(max-width:720px) and (orientation:portrait)').matches;
+    const gap=(hr.width?hr.left:r.right)-hl.right-24;
+    if(!portrait&&gap>=180){
+      // deitado e no computador: tela toda livre; a barra do chefe vai no topo, entre as barras e o "Pausar"
+      bs.top=(hl.top-r.top)+'px';bs.left=((hl.right+(hr.width?hr.left:r.right))/2-r.left)+'px';bs.width=Math.min(420,gap)+'px';
+    }else{
+      // em pé no celular: o mundo começa abaixo das barras e da faixa do chefe
+      let top=Math.max(hl.bottom,hr.height?hr.bottom:0)-r.top+6;bs.top=top+'px';bs.left='';bs.width='';top+=32;
+      OT=Math.max(0,Math.round(top-12))}
+    // em pé no celular: controles por cima do campo; o herói não desce para trás deles
+    if(portrait){
       const bt=$('#btns').getBoundingClientRect(),sb=$('#skbar').getBoundingClientRect();
       if(bt.height)OB=Math.max(0,Math.round(r.bottom-bt.top+12));
       if(sb.height)XR={x:sb.left-r.left-16,y:sb.top-r.top-OT-24}}

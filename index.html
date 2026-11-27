@@ -2893,6 +2893,7 @@ const Arena=(()=>{
   function updEnemy(e,dt){
     const p=S.p;
     for(const k of['hitT','stunT','slowT','fearT','armorT','hitCd','tele','arm','fade','flash','expose','snapT'])if(e[k]>0)e[k]=Math.max(0,e[k]-dt);
+    if(!e.boss&&e.inv>0&&e.st!=='hidden'&&e.st!=='wait'&&e.st!=='under'&&e.st!=='warn')e.inv=Math.max(0,e.inv-dt);
     if(e.burnT>0){e.burnT-=dt;e.hp-=e.burnDps*dt;e.hitT=Math.max(e.hitT,.03);if(e.hp<=0){kill(e);return}}
     e.x+=e.kx*dt;e.y+=e.ky*dt;e.kx*=1-5*dt;e.ky*=1-5*dt;
     e.look=ang(e,p);

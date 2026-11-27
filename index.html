@@ -280,6 +280,7 @@ input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line
   body.arena-on .joyz{left:0;bottom:0;width:56%;height:72%;min-width:0}
   /* faixa de baixo: ATACAR no canto, especiais em cima e movimentos embaixo, lado a lado */
   body.arena-on .btns{right:max(10px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:240px;height:100px}
+  body.arena-on .btns{pointer-events:none}body.arena-on .btns .ab{pointer-events:auto}body.arena-on .skbar{z-index:5}
   body.arena-on .btns .ab{width:46px;height:46px;font-size:.54rem}
   body.arena-on .btns .ab svg{width:18px;height:18px}
   body.arena-on #bGuard{right:192px;bottom:0}body.arena-on #bJump{right:138px;bottom:0}body.arena-on #bDash{right:84px;bottom:0}

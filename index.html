@@ -2378,7 +2378,7 @@ const Arena=(()=>{
     S.banner=mode==='endless'?'MODO INFINITO':`CAPÍTULO ${ch+1}  ·  ${CHAPTERS[ch].name.toUpperCase()}`;S.bannerT=2.2;
   }
   /* Modo infinito: os 3 primeiros mapas seguem a ordem dos capítulos; depois cada bloco de 5 ondas sorteia o mapa (sem repetir o anterior) */
-  function endTh(wi=S.wi){const b=Math.floor(wi/5);if(b<3)return b;S.thSeq=S.thSeq||[0,1,2];const pool=CHAPTERS.map((c,i)=>i).filter(i=>i<3||SAVE.cleared[i]);
+  function endTh(wi=S.wi){const b=Math.floor(wi/5),N=CHAPTERS.length;if(b<N)return b;S.thSeq=S.thSeq||CHAPTERS.map((c,i)=>i);const pool=CHAPTERS.map((c,i)=>i);
     for(let k=S.thSeq.length;k<=b;k++){const prev=S.thSeq[k-1];let n;do{n=pool[Math.floor(Math.random()*pool.length)]}while(n===prev&&pool.length>1);S.thSeq[k]=n}return S.thSeq[b]}
   function setScale(){
     if(S.mode==='endless'){const n=S.wi;S.hpS=4.2*Math.pow(1.05,n);S.dmgS=5.6*Math.pow(1.045,n)}
@@ -4220,7 +4220,7 @@ const Coach=(()=>{
       {sel:'.mis-diff',n:'Dificuldade',d:()=>'<b>Fácil</b>, <b>Médio</b>, <b>Difícil</b> e <b>Ultra</b>. Quanto mais difícil, mais XP, moedas e itens melhores. Vencer no Difícil libera poderes raros; o Ultra abre depois do Difícil. Cada estrela no capítulo é uma dificuldade vencida.'},
       {sel:'#misChs',n:'Escolha a missão',d:()=>'Cada <b>capítulo</b> tem 6 ondas: três de inimigos, uma com <b>mini chefe</b>, mais uma de inimigos e o <b>chefe</b> no final. Os capítulos liberam em ordem: vença um para abrir o próximo. Alguns poderes só saem aqui.'},
       {sel:'#ov [data-act=tutorial]',n:'Tutorial de combate',d:()=>'Ensina mover, atacar, esquivar, pular, defender e usar habilidades com um alvo de treino. Pode rever quando quiser.'},
-      {sel:'#ov [data-arg=endless]',n:'Modo infinito',d:()=>'Libera depois do Capítulo 1. As ondas não acabam, a dificuldade sobe e aparece um chefe a cada 5 ondas. Seu recorde fica salvo.'},
+      {sel:'#ov [data-arg=endless]',n:'Modo infinito',d:()=>'Libera depois do Capítulo 1. As ondas não acabam, a dificuldade sobe e aparece um chefe a cada 5 ondas. Você passa pelos 10 mapas em ordem (5 ondas cada) e depois eles são sorteados. Seu recorde fica salvo.'},
       {sel:'#field',n:'Durante a luta',d:()=>'Barra <b>vermelha</b> é vida, <b>azul</b> é energia (gasta nas habilidades) e a <b>dourada</b> carrega o Supremo. Inimigos dão <b>XP e moedas</b>, às vezes deixam uma <b>cruz verde</b> que cura, e mini chefes e chefes deixam <b>equipamentos</b>.'},
       {sel:'#btnPause',n:'Pausa',d:()=>'Pausa a luta (tecla P no computador). Dali você pode continuar, abandonar a missão ou sair para o menu.'}],
     evolve:[

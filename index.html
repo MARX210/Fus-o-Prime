@@ -342,6 +342,17 @@ button,a,.btn,.mini,canvas{touch-action:manipulation}
 .intro{position:fixed;inset:0;z-index:200;background:#04040e;color:var(--fg);overflow:hidden;transition:opacity .45s;touch-action:manipulation}
 .intro.out{opacity:0;pointer-events:none}
 body.intro-on{overflow:hidden}
+.adlg .in{width:100%;box-sizing:border-box;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:12px;font:600 1rem var(--fb);margin:8px 0 2px;user-select:text;-webkit-user-select:text}
+.adlg .err{color:#ff8a9a;min-height:1em;margin:2px 0 6px}
+.code-big{font:700 1.6rem var(--fd);letter-spacing:.12em;text-align:center;padding:14px;border:1px dashed var(--a);border-radius:12px;margin:10px 0;user-select:text;-webkit-user-select:text}
+.rk-me{display:flex;align-items:center;justify-content:space-between;gap:10px}.rk-me>div{display:flex;flex-direction:column;gap:2px}.rk-me b{font:700 1.1rem var(--fd)}
+.rk-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.rk-tabs button{font:700 .72rem var(--fd);letter-spacing:.06em;text-transform:uppercase;padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);cursor:pointer}.rk-tabs button.on{color:#fff;border-color:var(--a)}
+.rk-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center}.rk-row .rk-f{grid-column:2/4;justify-self:start}
+.rk-row.mine{border-color:var(--a);box-shadow:0 0 0 1px var(--a) inset}
+.rk-pos{font:700 1.1rem var(--fd);text-align:center;color:var(--mut)}.rk-pos.p0{color:#ffd36a}.rk-pos.p1{color:#d9d9e6}.rk-pos.p2{color:#e0a070}
+.rk-n{display:flex;flex-direction:column;min-width:0}.rk-n b{font-family:var(--fd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-v{display:flex;flex-direction:column;align-items:flex-end}.rk-v b{font:700 1.2rem var(--fd)}
+.rk-f{font-size:.8rem;padding:4px 9px}
 .mis-diff{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 4px}
 .mis-diff button{font:700 .74rem var(--fd);letter-spacing:.08em;text-transform:uppercase;padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);cursor:pointer}
 .mis-diff button.on{color:#fff;border-color:currentColor;box-shadow:0 0 0 1px currentColor inset}
@@ -580,6 +591,7 @@ body.coach-on .screen:not([hidden]){padding-bottom:min(60vh,420px)}
     <section class="screen" id="s-shop" hidden></section>
     <section class="screen" id="s-map" hidden></section>
     <section class="screen" id="s-boss" hidden></section>
+    <section class="screen" id="s-rank" hidden></section>
     <section class="screen" id="s-disc" hidden></section>
     <section class="screen" id="s-arch" hidden></section>
   </main>
@@ -3672,15 +3684,17 @@ const Arena=(()=>{
   /* ---------- fim de jogo e overlays ---------- */
   function showOv(html){ov.innerHTML=`<div class="box">${html}</div>`;ov.classList.add('on')}
   function hideOv(){ov.classList.remove('on')}
+  function sendRun(){if(!S||S.mode!=='endless'||S.sent||S.wi<1)return;S.sent=1;const wave=S.wi;
+    Online.score({wave,dur:Math.round(S.t),kills:S.run.kills,a:F.a,b:F.b,fname:F.name}).then(r=>{const el=$('#rkMsg');if(!el||!r)return;el.textContent=r.error?('Recorde não enviado: '+r.error):`Recorde enviado: onda ${wave}, ${r.pos}º lugar no ranking geral.`})}
   function lose(){
     stopDrones();S.state='lose';persist(true);AUD.music(null);AUD.play('j_lose',{vol:.7});setTimeout(()=>AUD.voice('v_gameover',0),900);setTimeout(()=>{if(S&&S.state==='lose')AUD.music('title')},3500);Snd.play('hurt');
-    const r=S.run;
+    const r=S.run;sendRun();
     showOv(`<span class="lab-tag">Derrotado</span><h2>Seus poderes se esgotaram</h2>
-      <p class="mut">Ganhos mantidos: ${r.xp} XP, ${r.coins} moedas, ${r.kills} inimigos derrotados.</p>
+      <p class="mut">Ganhos mantidos: ${r.xp} XP, ${r.coins} moedas, ${r.kills} inimigos derrotados.</p>${S.mode==='endless'?`<p class="mut" id="rkMsg">${Online.me()?'Enviando recorde...':'<button class="mini" data-act="onjoin">Entre no ranking</button> para o seu recorde aparecer para todo mundo.'}</p>`:''}
       <div class="opts"><button class="btn pri" data-act="retry">Tentar novamente</button><button class="btn" data-act="go" data-arg="lab">Ajustar fusão</button><button class="btn" data-act="go" data-arg="map">Voltar ao mapa</button></div>`);
   }
   function win(){
-    S.state='win';AUD.music(null);AUD.play('j_win',{vol:.8});setTimeout(()=>AUD.voice('v_win',0),700);setTimeout(()=>{if(S&&S.state==='win')AUD.music('title')},3500);const ch=CHAPTERS[S.ch],D=DIFFS[S.diff],rw0=CHAPTERS[S.ch].reward,r={xp:Math.round(rw0.xp*D.rw),coins:Math.round(rw0.coins*D.rw),cry:Math.round(rw0.cry*D.rw)+(S.diff===3?20:0)};
+    S.state='win';setTimeout(()=>Online.sync(),500);AUD.music(null);AUD.play('j_win',{vol:.8});setTimeout(()=>AUD.voice('v_win',0),700);setTimeout(()=>{if(S&&S.state==='win')AUD.music('title')},3500);const ch=CHAPTERS[S.ch],D=DIFFS[S.diff],rw0=CHAPTERS[S.ch].reward,r={xp:Math.round(rw0.xp*D.rw),coins:Math.round(rw0.coins*D.rw),cry:Math.round(rw0.cry*D.rw)+(S.diff===3?20:0)};
     SAVE.dw=SAVE.dw||[-1,-1,-1];const was=POWERS.filter(p=>isUnlocked(p.id,SAVE)).map(p=>p.id),first=(SAVE.dw[S.ch]??-1)<S.diff;
     SAVE.cleared[S.ch]=true;if(first)SAVE.dw[S.ch]=S.diff;
     const before=POWERS.filter(p=>!was.includes(p.id)&&isUnlocked(p.id,SAVE)).map(p=>p.n);
@@ -3754,16 +3768,16 @@ const Arena=(()=>{
 
   requestAnimationFrame(loop);
   return{
-    start(mode,tutorial){stopDrones();if(S&&S.cine)cineEnd();tutRestore();newRun(mode==='endless'?'endless':'camp',mode==='endless'?0:+mode);resize();S.p.x=W/2;S.p.y=H*.62;
+    start(mode,tutorial){stopDrones();if(S&&S.cine)cineEnd();try{const k=pairKey(SAVE.core,SAVE.ess);SAVE.fusUse=SAVE.fusUse||{};SAVE.fusUse[k]=(SAVE.fusUse[k]||0)+1}catch(e){}tutRestore();newRun(mode==='endless'?'endless':'camp',mode==='endless'?0:+mode);resize();S.p.x=W/2;S.p.y=H*.62;
       if(S.mode==='camp'&&S.ch===0&&(tutorial===true||(!SAVE.tutDone&&!SAVE.cleared[0]&&!SAVE.stats.waves))){S.state='tut';S.bannerT=0;S.tut={stats:Object.assign({},SAVE.stats)};S.p.y=H*.72;tutStep(0)}},
     tutNext,tutEnd,
     enter(){active=true;resize();if(!S||S.state==='lose'||S.state==='win')showIdle();},
     leave(){active=false;if(S&&!S.paused&&S.state!=='lose'&&S.state!=='win')pause(true);for(const k in keys)keys[k]=false;held.atk=held.guard=false},
     pause,showIdle,hasRun:()=>!!S&&S.state!=='lose'&&S.state!=='win',
-    quit(){if(S&&S.cine)cineEnd();AUD.music('title');AUD.setDuck(false);stopDrones();tutRestore();S=null;hideOv();hud.hBoss.hidden=true;showIdle()},
+    quit(){if(S&&S.cine)cineEnd();try{sendRun()}catch(e){}AUD.music('title');AUD.setDuck(false);stopDrones();tutRestore();S=null;hideOv();hud.hBoss.hidden=true;showIdle()},
     retry(){if(S)this.start(S.mode==='endless'?'endless':S.ch)},
     get S(){return S},get F(){return F},get ST(){return ST},
-    _test:{endTh,SFX,perfectDodge,update,hitEnemy,spawn,cast,keys,trig,held,kill,ATK},_dims:()=>({W,H,FH,OT,OB,XR})
+    _test:{lose,endTh,SFX,perfectDodge,update,hitEnemy,spawn,cast,keys,trig,held,kill,ATK},_dims:()=>({W,H,FH,OT,OB,XR})
   };
 })();
 'use strict';
@@ -3771,7 +3785,7 @@ const Arena=(()=>{
 SAVE=loadSave();
 if(SAVE.legFix){const n=SAVE.legFix;delete SAVE.legFix;persist(true);setTimeout(()=>toast(`Lendários repetidos foram trocados por ${n*SELL[2]} moedas`),1500)}
 const DEV=/[?&]dev\b/.test(location.search);
-const TABS=[['menu','Início'],['create','Criação'],['lab','Laboratório'],['arena','Arena'],['evolve','Evolução'],['inv','Inventário'],['shop','Loja'],['map','Mapa'],['boss','Chefes'],['disc','Descobertas'],['arch','Arquitetura']];
+const TABS=[['menu','Início'],['create','Criação'],['lab','Laboratório'],['arena','Arena'],['evolve','Evolução'],['inv','Inventário'],['shop','Loja'],['map','Mapa'],['boss','Chefes'],['rank','Ranking'],['disc','Descobertas'],['arch','Arquitetura']];
 let cur='menu',lab={core:SAVE.core,ess:SAVE.ess,slot:'core'},resetArm=0;
 const fusionNow=()=>makeFusion(SAVE.core,SAVE.ess);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -3785,7 +3799,7 @@ function toast(msg){
 function updWallet(){$('#wLv').textContent='Nv '+SAVE.level;$('#wCoin').textContent=SAVE.coins;$('#wCry').textContent=SAVE.cry;
   $('#btnSound').textContent='Som: '+(SAVE.sound?'ligado':'desligado');$('#introSound').textContent='Som: '+(SAVE.sound?'ligado':'desligado');$('#sheetSound').textContent='Som: '+(SAVE.sound?'ligado':'desligado');const gf='Gráficos: '+(SAVE.gfx==='2d'?'2D':'3D');$('#btnGfx').textContent=gf;$('#sheetGfx').textContent=gf;
   $('#t-evolve').classList.toggle('dot',SAVE.pts>0)}
-function discover(F){const k=pairKey(F.a,F.b);if(!SAVE.disc[k]){SAVE.disc[k]=1;SAVE.stats.fus++;return true}return false}
+function discover(F){const k=pairKey(F.a,F.b);if(!SAVE.disc[k]){SAVE.disc[k]=1;SAVE.stats.fus++;Online.sync();return true}return false}
 
 /* ---------- navegação ---------- */
 const PRI=['menu','lab','arena','evolve'],SHORT={lab:'Lab'};
@@ -3797,6 +3811,8 @@ document.body.appendChild(sheet);
 function closeMore(){sheet.hidden=true;$('#moreBtn').setAttribute('aria-expanded','false')}
 
 function show(tab){
+  if(tab==='menu'&&SAVE&&SAVE.created&&!SAVE.online&&!show.asked&&(!SAVE.onLater||Date.now()-SAVE.onLater>3*864e5)){show.asked=1;const tryAsk=()=>{if(Intro.on||document.body.classList.contains('coach-on')||cur==='arena'){setTimeout(tryAsk,1500);return}if(!SAVE.online)onlineDlg('join')};setTimeout(tryAsk,1200)}
+  if(SAVE&&SAVE.online&&!show.synced){show.synced=1;Online.sync()}
   if(tab!=='arena'){AUD.music('title');AUD.setDuck(false)}else if(Arena.hasRun()&&Arena.S&&AUD.cur==='title')AUD.music(Arena.S.mode==='endless'?'endless':'c'+CHAPTERS[Arena.S.ch].mus[0]);
   if(cur==='arena'&&tab!=='arena')Arena.leave();
   if(cur==='lab'&&tab!=='lab')labStop();
@@ -3804,7 +3820,7 @@ function show(tab){
   TABS.forEach(([k])=>{$('#s-'+k).hidden=k!==tab;$('#t-'+k).setAttribute('aria-selected',k===tab)});
   $$('#more [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
   $('#moreBtn').setAttribute('aria-selected',!PRI.includes(tab));
-  ({menu:rMenu,create:rCreate,lab:rLab,evolve:rEvolve,inv:rInv,shop:rShop,map:rMap,boss:rBoss,disc:rDisc,arch:rArch,arena:()=>{}})[tab]();
+  ({menu:rMenu,create:rCreate,lab:rLab,evolve:rEvolve,inv:rInv,shop:rShop,map:rMap,boss:rBoss,rank:rRank,disc:rDisc,arch:rArch,arena:()=>{}})[tab]();
   if(tab==='arena')Arena.enter();
   updWallet();window.scrollTo({top:0});
   try{history.replaceState(null,'','#'+tab)}catch(e){}
@@ -3884,7 +3900,7 @@ function slotHtml(){
   <button class="slot" data-act="slot" data-arg="ess" aria-pressed="${lab.slot==='ess'}"><small>Essência</small><b>${B.n}</b></button>`;
 }
 function labRender(){
-  const F=labF();labPrevF=F;setTheme(F);setTimeout(()=>Coach.refresh(),0);
+  const F=labF();Online.firsts().then(m=>{const el=$('#labFirst');if(!el)return;const k=pairKey(F.a,F.b);el.innerHTML=m[k]?`Primeiro do jogo a descobrir: <b>${esc(m[k])}</b>`:(Online.st.ok?'Ninguém descobriu esta fusão ainda. Seja o primeiro!':'')});labPrevF=F;setTheme(F);setTimeout(()=>Coach.refresh(),0);
   $('#labSlots').innerHTML=slotHtml();
   $('#labName').textContent=F.name;
   const cur0=SAVE.core===lab.core&&SAVE.ess===lab.ess;
@@ -3896,6 +3912,7 @@ function labRender(){
   const typeRow=t=>`<span class="tag ${F.mult[t]>=1.12?'good':F.mult[t]<=.92?'bad':''}">${TYPE_NAMES[t]} ${F.mult[t]>=1?'+':''}${pct(F.mult[t]-1)}%</span>`;
   $('#labRes').innerHTML=`
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="tag acc">${F.catLabel}</span><span class="tag ${F.rel.k==='instavel'?'warn':F.rel.k==='harmonia'?'good':''}">${F.rel.n}</span>${isNew?'<span class="tag warn">Inédita</span>':''}${F.curated?'<span class="tag">Combinação lendária</span>':''}</div>
+    <p class="mut" id="labFirst" style="font-size:.85rem;margin:2px 0 0">${(Online.st.firsts||{})[pairKey(F.a,F.b)]?`Primeiro do jogo a descobrir: <b>${esc(Online.st.firsts[pairKey(F.a,F.b)])}</b>`:''}</p>
     <p class="mut">${F.rel.d}. ${esc(F.lore)}</p>
     <div class="list" style="gap:6px">${F.stats.map((v,i)=>`<div class="stat-row"><span>${STAT_NAMES[i]}</span><div class="bar"><i style="width:${v/20*100}%"></i></div><span>${v.toFixed(1)}</span></div>`).join('')}</div>
     <dl class="abil">
@@ -4012,6 +4029,70 @@ function rBoss(){
   <div class="panel list"><span class="lab-tag">Inimigos comuns, especiais e mini chefes</span>${es}<div class="item"><div style="flex:1 1 220px"><b style="font-family:var(--fd)">Mini chefes</b> <span class="tag">Mini chefe</span><br><span class="mut">${MINIS.map(m=>m.n).join(', ')}. Investida, onda de choque pulável e invocação.</span></div></div></div>`;
 }
 
+
+/* ===== ONLINE: perfil fixo, ranking e descobertas (API em /api/game) ===== */
+const Online=(()=>{
+  const st={firsts:{},firstsAt:0,ok:null};
+  async function call(act,body,get){
+    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8000);
+    try{const url='/api/game?act='+act+(get?'&'+new URLSearchParams(body||{}):'');
+      const r=await fetch(url,get?{signal:ctl.signal}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:ctl.signal});
+      const j=await r.json().catch(()=>({error:'Resposta inválida do servidor.'}));st.ok=r.status!==503&&r.status<500;
+      if(r.status===401&&SAVE.online&&act!=='register'&&act!=='recover'){SAVE.online.lost=1;persist()}
+      return r.ok?j:{error:j.error||'Erro '+r.status,status:r.status}}
+    catch(e){st.ok=false;return{error:'Sem conexão com o servidor.',offline:true}}finally{clearTimeout(tm)}}
+  const me=()=>SAVE.online&&SAVE.online.token&&!SAVE.online.lost?SAVE.online:null;
+  function favFusion(){const u=SAVE.fusUse||{};let k=null,n=0;for(const x in u)if(u[x]>n){n=u[x];k=x}k=k||pairKey(SAVE.core,SAVE.ess);const[a,b]=k.split('|');let name='';try{name=makeFusion(a,b).name}catch(e){}return{fav:k,favName:name}}
+  function profile(){return Object.assign({level:SAVE.level,disc:Object.keys(SAVE.disc).length,cleared:SAVE.cleared.filter(Boolean).length,stars:(SAVE.dw||[]).reduce((a,d)=>a+(d>=0?d+1:0),0)},favFusion())}
+  let syncT=0;
+  function sync(){const m=me();if(!m)return;clearTimeout(syncT);syncT=setTimeout(async()=>{await call('sync',{token:m.token,profile:profile()});
+    const pend=Object.keys(SAVE.disc).filter(k=>!(SAVE.discSent||{})[k]);if(pend.length){const r=await call('discover',{token:m.token,pairs:pend});
+      if(!r.error){SAVE.discSent=SAVE.discSent||{};pend.forEach(k=>SAVE.discSent[k]=1);(r.first||[]).forEach(k=>{st.firsts[k]=m.name;toast('Você foi o primeiro do jogo a descobrir '+(()=>{const[a,b]=k.split('|');try{return makeFusion(a,b).name}catch(e){return k}})()+'!')});persist()}}},1200)}
+  async function score(run){const m=me();if(!m)return null;const r=await call('score',Object.assign({token:m.token},run));sync();return r}
+  async function firsts(force){if(!force&&Date.now()-st.firstsAt<60000)return st.firsts;const r=await call('firsts',{},true);if(!r.error){st.firsts=r.map||{};st.firstsAt=Date.now()}return st.firsts}
+  return{call,me,sync,score,firsts,profile,st};
+})();
+/* janela de perfil: confirmar apelido, recuperar por código, mostrar código */
+function onlineDlg(mode='join',msg=''){
+  let d=$('#onDlg');if(!d){d=document.createElement('div');d.id='onDlg';d.className='adlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
+  const m=Online.me();d.hidden=false;
+  if(mode==='code'){d.innerHTML=`<div class="box"><h3>Seu perfil está pronto, ${esc(m.name)}!</h3><p class="mut">Guarde este código. Com ele você recupera o perfil em outro celular ou se limpar o navegador.</p>
+    <div class="code-big">${esc(m.code||'')}</div><div class="row"><button class="btn sm" data-act="oncopy">Copiar código</button><button class="btn sm pri" data-act="onclose">Já anotei</button></div></div>`;return}
+  if(mode==='recover'){d.innerHTML=`<div class="box"><h3>Recuperar perfil</h3><p class="mut">Digite o código que apareceu quando você criou o perfil (FP-XXXX-XXXX).</p>
+    <input id="onCode" class="in" placeholder="FP-XXXX-XXXX" autocomplete="off" autocapitalize="characters" maxlength="14"><p class="hint err">${esc(msg)}</p>
+    <div class="row"><button class="btn sm" data-act="onjoin">Voltar</button><button class="btn sm pri" data-act="onrecover">Recuperar</button></div></div>`;return}
+  d.innerHTML=`<div class="box"><h3>Entre no ranking</h3><p class="mut">Seu apelido vira um perfil fixo: só você pode usar. Ele aparece no ranking com a sua melhor onda e a fusão que você usou.</p>
+    <input id="onName" class="in" value="${esc(SAVE.name||'')}" maxlength="16" autocomplete="off" placeholder="Seu apelido"><p class="hint err">${esc(msg)}</p>
+    <div class="row"><button class="btn sm" data-act="onlater">Agora não</button><button class="btn sm pri" data-act="onregister">Confirmar apelido</button></div>
+    <button class="mini" data-act="onrecoverdlg" style="margin-top:6px">Já tenho um código de recuperação</button></div>`;
+}
+async function onlineRegister(){const n=$('#onName').value.trim();const b=$('#onDlg [data-act=onregister]');b.disabled=true;b.textContent='Enviando...';
+  const r=await Online.call('register',{name:n});if(r.error){onlineDlg('join',r.offline?'Sem conexão agora. Tente de novo mais tarde.':r.error);return}
+  SAVE.online={id:r.id,name:r.name,token:r.token,code:r.code};SAVE.name=r.name;persist(true);Online.sync();onlineDlg('code');}
+async function onlineRecover(){const c=$('#onCode').value;const r=await Online.call('recover',{code:c});if(r.error){onlineDlg('recover',r.error);return}
+  SAVE.online={id:r.id,name:r.name,token:r.token};SAVE.name=r.name;persist(true);$('#onDlg').hidden=true;toast('Perfil recuperado: '+r.name);Online.sync();if(cur==='rank')rRank()}
+/* aba Ranking */
+let rankTab='geral';
+function fusChip(a,b,name){if(!a||!P[a]||!P[b])return`<span class="mut">${esc(name||'')}</span>`;return`<span class="pw rk-f" style="--c1:${P[a].c};--c2:${P[b].c}"><i></i>${esc(name||makeFusion(a,b).name)}</span>`}
+async function rRank(){
+  const m=Online.me(),el=$('#s-rank');
+  el.innerHTML=`<div><span class="lab-tag">Ranking</span><h2>Os melhores do Fusão Prime</h2></div>
+  <div class="panel rk-me">${m?`<div><small class="mut">Seu perfil</small><b>${esc(m.name)}</b><span class="mut">Melhor onda: ${SAVE.endlessBest||0} · ${Object.keys(SAVE.disc).length} fusões</span></div><button class="mini" data-act="oncodeshow">Meu código</button>`
+    :`<div><small class="mut">Você ainda não está no ranking</small><b>Confirme seu apelido</b></div><button class="btn sm pri" data-act="onjoin">Entrar no ranking</button>`}</div>
+  <div class="rk-tabs" role="tablist">${[['geral','Geral'],['semanal','Semana'],['colecao','Colecionadores'],['semana','Fusão da semana']].map(([k,n])=>`<button class="${k===rankTab?'on':''}" data-act="rktab" data-arg="${k}" role="tab" aria-selected="${k===rankTab}">${n}</button>`).join('')}</div>
+  <div class="panel list" id="rkList"><p class="mut">Carregando...</p></div>`;
+  const L=$('#rkList');
+  if(rankTab==='semana'){const r=await Online.call('week',{},true);if(r.error){L.innerHTML=`<p class="mut">${esc(r.error)}</p>`;return}
+    L.innerHTML=`<span class="lab-tag">Mais usada nesta semana</span>${r.used?`<div class="item">${fusChip(r.used.a,r.used.b,r.used.fname)}<span class="mut">${r.used.n} partidas</span></div>`:'<p class="mut">Ninguém jogou ainda nesta semana.</p>'}
+      <span class="lab-tag" style="margin-top:8px">Foi mais longe nesta semana</span>${r.best?`<div class="item">${fusChip(r.best.a,r.best.b,r.best.fname)}<span class="mut">${esc(r.best.name)} · onda ${r.best.wave}</span></div>`:'<p class="mut">Sem recordes ainda.</p>'}`;return}
+  const r=await Online.call('ranking',{type:rankTab},true);
+  if(r.error){L.innerHTML=`<p class="mut">${r.offline?'Sem conexão com o servidor agora.':esc(r.error)}</p>`;return}
+  if(!r.rows.length){L.innerHTML='<p class="mut">Ainda ninguém aqui. Seja o primeiro!</p>';return}
+  L.innerHTML=r.rows.map((x,i)=>{const mine=m&&x.name===m.name,[a,b]=(x.fav||'').split('|');
+    return`<div class="item rk-row ${mine?'mine':''}"><span class="rk-pos ${i<3?'p'+i:''}">${i+1}</span><div class="rk-n"><b>${esc(x.name)}</b><small class="mut">Nv ${x.level||1}</small></div>
+      ${rankTab==='colecao'?`<div class="rk-v"><b>${x.disc}</b><small class="mut">fusões</small></div>${fusChip(a,b,x.fav_name)}`:`<div class="rk-v"><b>${x.wave}</b><small class="mut">onda</small></div>${fusChip(x.a,x.b,x.fname)}`}</div>`}).join('');
+}
+
 /* ---------- Descobertas ---------- */
 function rDisc(){
   const n=POWERS.length;let cells='';
@@ -4065,6 +4146,15 @@ document.addEventListener('click',e=>{
     case 'go':show(arg);break;
     case 'more':{const open=sheet.hidden;sheet.hidden=!open;$('#moreBtn').setAttribute('aria-expanded',open);break}
     case 'play':show('arena');Arena.start(arg);break;
+    case 'onjoin':onlineDlg('join');break;
+    case 'onregister':onlineRegister();break;
+    case 'onrecoverdlg':onlineDlg('recover');break;
+    case 'onrecover':onlineRecover();break;
+    case 'onlater':SAVE.onLater=Date.now();persist();$('#onDlg').hidden=true;break;
+    case 'onclose':$('#onDlg').hidden=true;if(cur==='rank')rRank();break;
+    case 'oncopy':{const c=(SAVE.online||{}).code||'';try{navigator.clipboard.writeText(c);toast('Código copiado')}catch(e){toast(c)}break}
+    case 'oncodeshow':{const m=SAVE.online||{};if(m.code)onlineDlg('code');else toast('O código só aparece no aparelho onde o perfil foi criado.');break}
+    case 'rktab':rankTab=arg;rRank();break;
     case 'diff':SAVE.diff=+arg;persist();Arena.showIdle();break;
     case 'retry':Arena.retry();break;
     case 'intro':Intro.open(true);break;
@@ -4257,7 +4347,7 @@ const Coach=(()=>{
   function hl(scroll){$$('.coach-hl').forEach(x=>x.classList.remove('coach-hl'));if(!on)return;const t=target();el.classList.remove('up');if(t){t.classList.add('coach-hl');const fixo=getComputedStyle(t).position==='fixed'||t.closest('.tabs,.top');
       if(scroll){if(t.closest('.top')||(t.closest('.tabs')&&!mob()))scrollTo({top:0,behavior:'auto'});else if(!fixo)t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'})}
       const place=()=>{if(!t.classList.contains('coach-hl'))return;el.classList.remove('up');const r=t.getBoundingClientRect(),c=el.getBoundingClientRect();if(r.top>c.top-40&&r.top<c.bottom)el.classList.add('up')};place();setTimeout(place,500)}}
-  const nomes={menu:'Início',create:'Criação',lab:'Laboratório',arena:'Arena',evolve:'Evolução',inv:'Inventário',shop:'Loja',map:'Mapa',boss:'Chefes',disc:'Descobertas',arch:'Arquitetura'};
+  const nomes={menu:'Início',create:'Criação',lab:'Laboratório',arena:'Arena',evolve:'Evolução',inv:'Inventário',shop:'Loja',map:'Mapa',boss:'Chefes',rank:'Ranking',disc:'Descobertas',arch:'Arquitetura'};
   function render(scroll=true){const L=steps(),st=L[i],last=i===L.length-1;
     el.innerHTML=`<div class="dots">${L.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>
       <span class="lab-tag">Guia · ${nomes[tab]} · ${i+1} de ${L.length}</span><h3 id="coachT">${st.n}</h3><p>${st.d()}</p>

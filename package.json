@@ -1,0 +1,9 @@
+{
+  "name": "fusao-prime",
+  "private": true,
+  "description": "Fusão Prime: jogo de fusão de poderes. API de perfis e ranking em /api.",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

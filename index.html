@@ -741,7 +741,7 @@ function makePure(a){
 }
 
 /* ===== PROGRESSÃO ===== */
-const xpNeed=l=>Math.round(24*Math.pow(l,1.35)+10);
+const xpNeed=l=>Math.round((24*Math.pow(l,1.35)+10)*(1+Math.max(0,l-45)*.05+Math.max(0,l-60)*.15));
 function evoOf(l){return{tier:l>=30?4:l>=15?3:l>=5?2:1,
   dmg:1+(l>=5?.05:0)+(l>=15?.15:0)+(l>=30?.25:0)+(l>30?.02*(l-30):0),
   hp:(l>=5?.08:0)+(l>=30?.25:0),extra:l>=15,sp2:l>=10,sup:l>=20,legend:l>=30};}
@@ -2620,7 +2620,7 @@ const Arena=(()=>{
     if(e.dead)return;if(e.onKill){const f=e.onKill;e.onKill=null;f(e)}if(e.links)e.links.forEach(l=>{l.t.guardBy=null});if(e.dummy){e.dead=true;parts.burst(e.x,e.y,e.col,18,160,3.5,.5);Snd.play('kill');return}
     e.dead=true;SAVE.stats.kills++;S.run.kills++;
     parts.burst(e.x,e.y,e.col,e.boss?60:14,e.boss?320:150,e.boss?5:3.5,e.boss?1:.5);Snd.play('kill');shake(e.boss?14:2);
-    const rw=S.mode==='endless'?1:DIFFS[S.diff].rw;awardXP(e.xp*rw*(1+.35*(S.mode==='endless'?4:S.ch))*(S.mode==='endless'?1+.02*S.wi:1),e.x,e.y);
+    const rw=S.mode==='endless'?1:DIFFS[S.diff].rw;awardXP(e.xp*rw*(1+.35*(S.mode==='endless'?2.3:S.ch))*(S.mode==='endless'?1+.02*S.wi:1),e.x,e.y);
     const co=Math.round(e.coin*rw*(1+.15*S.ch));SAVE.coins+=co;S.run.coins+=co;
     if(e.cry){SAVE.cry+=e.cry;S.run.cry+=e.cry}
     if(!e.boss&&!e.mini&&Math.random()<(S.mode==='endless'?.12:DIFFS[S.diff].drop))S.drops.push({x:e.x,y:e.y,t:9});
